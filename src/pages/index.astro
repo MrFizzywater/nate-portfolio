@@ -1,0 +1,96 @@
+---
+import { getCollection } from 'astro:content';
+import '../styles/global.css';
+
+const prints = await getCollection('prints');
+---
+
+<!DOCTYPE html>
+<html lang="en" class="bg-stone-950 text-stone-100 antialiased selection:bg-stone-800">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nate Lacroix — Photographic Editions</title>
+</head>
+<body class="min-h-screen flex flex-col justify-between font-sans">
+
+  <!-- Header -->
+  <header class="border-b border-stone-800/80 sticky top-0 bg-stone-950/90 backdrop-blur-md z-20">
+    <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
+      <div>
+        <a href="/" class="text-xl font-light tracking-tight text-white block">Nate Lacroix</a>
+        <span class="text-[10px] uppercase tracking-[0.25em] text-stone-500">Fine Art Prints & Archive</span>
+      </div>
+      <nav class="flex items-center gap-6 text-xs uppercase tracking-widest font-medium">
+        <a href="/" class="text-white border-b border-white pb-0.5">Editions</a>
+        <a href="/archive/" class="text-stone-400 hover:text-white transition-colors">Moving Image &rarr;</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Photo Grid -->
+  <main class="max-w-6xl mx-auto px-6 py-16 flex-grow w-full">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+      {prints.map((item) => (
+        <article class="group flex flex-col">
+          <div 
+            class="aspect-[4/5] bg-stone-900 overflow-hidden relative border border-stone-800/80 cursor-pointer"
+            data-flavor={item.data.flavorText || "Archival print frame."}
+          >
+            <img 
+              src={item.data.image} 
+              alt={item.data.title}
+              class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+          </div>
+          <div class="mt-4 space-y-1">
+            <div class="flex justify-between items-baseline">
+              <h2 class="text-lg font-light tracking-tight text-white">{item.data.title}</h2>
+              <span class="text-xs text-stone-500 font-mono">{item.data.year}</span>
+            </div>
+            <p class="text-[11px] uppercase tracking-wider text-stone-400">
+              {item.data.editionType} &bull; {item.data.paper}
+            </p>
+          </div>
+        </article>
+      ))}
+    </div>
+  </main>
+
+  <!-- Status / Flavor Text Footer Bar -->
+  <aside id="status-bar" class="border-t border-stone-900 bg-stone-950 py-3 px-6 text-center text-xs font-mono text-stone-500 tracking-wider">
+    [READY] Hover over works to inspect. Press 'E' for retro mode.
+  </aside>
+
+  <!-- Easter Egg Scripts -->
+  <script>
+    // 1. Console Greeting
+    console.log(
+      "%c[Nate Lacroix Portfolio]\n%cNothing to inspect here. Go buy a print or touch grass.",
+      "font-weight: bold; font-size: 14px; color: #f97316;",
+      "color: #888;"
+    );
+
+    // 2. Status Bar Flavor Text Inspector
+    const statusBar = document.getElementById('status-bar');
+    document.querySelectorAll('[data-flavor]').forEach((el) => {
+      el.addEventListener('mouseenter', () => {
+        if (statusBar) statusBar.textContent = `> ${el.getAttribute('data-flavor')}`;
+      });
+      el.addEventListener('mouseleave', () => {
+        if (statusBar) statusBar.textContent = '[READY] Hover over works to inspect. Press \'E\' for retro mode.';
+      });
+    });
+
+    // 3. Retro CRT Mode Toggle (Hotkey: E)
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'e' || e.key === 'E') {
+        document.body.classList.toggle('grayscale');
+        console.log("[QUIRK] Retro mode toggled.");
+      }
+    });
+  </script>
+</body>
+</html>
