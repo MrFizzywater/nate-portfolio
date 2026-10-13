@@ -1,0 +1,58 @@
+---
+import { getEntry, render } from 'astro:content';
+import settings from '../content/settings/general.json';
+import '../styles/global.css';
+
+const entry = await getEntry('pages', 'about');
+const rendered = entry ? await render(entry) : null;
+const { Content } = rendered || {};
+---
+
+<!DOCTYPE html>
+<html lang="en" class="bg-stone-950 text-stone-100 antialiased selection:bg-stone-800">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — Nate Lacroix</title>
+</head>
+<body class="min-h-screen flex flex-col justify-between font-sans">
+  <header class="border-b border-stone-800/80 sticky top-0 bg-stone-950/90 backdrop-blur-md z-30">
+    <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
+      <div>
+        <a href="/" class="text-xl font-light tracking-tight text-white block">{(settings.siteTitle || 'Nate Lacroix')}</a>
+        <span class="text-[10px] uppercase tracking-[0.25em] text-stone-500">{(settings.tagline || 'Photography • Moving Image')}</span>
+      </div>
+      <nav class="flex items-center gap-6 text-xs uppercase tracking-widest font-medium">
+        <a href="/" class="text-stone-400 hover:text-white transition-colors">Work</a>
+        <a href="/about/" class="text-white border-b border-white pb-0.5">About</a>
+        <a href="/contact/" class="text-stone-400 hover:text-white transition-colors">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-6 py-20 flex-grow w-full">
+    <span class="text-[10px] uppercase tracking-[0.3em] text-stone-500 font-mono block mb-3">Profile</span>
+    <h1 class="text-3xl sm:text-4xl font-light tracking-tight text-white mb-6">{entry?.data.title || "About"}</h1>
+    
+    {entry?.data.headline && (
+      <p class="text-xl sm:text-2xl font-light text-stone-300 leading-snug border-l-2 border-stone-700 pl-6 my-8 italic">
+        "{entry.data.headline}"
+      </p>
+    )}
+
+    {entry?.data.portrait && (
+      <div class="my-8 aspect-4/3 bg-stone-900 border border-stone-800 overflow-hidden">
+        <img src={entry.data.portrait} alt="Nate Lacroix" class="w-full h-full object-cover" />
+      </div>
+    )}
+
+    <div class="prose prose-invert prose-stone text-stone-300 font-light leading-relaxed text-base space-y-6 pt-4 border-t border-stone-800/80">
+      {Content ? <Content /> : <p>Media artist and filmmaker based in Midland, Ontario.</p>}
+    </div>
+  </main>
+
+  <footer class="border-t border-stone-900 py-8 text-center text-[10px] uppercase tracking-widest text-stone-600">
+    &copy; 2026 Nate Lacroix.
+  </footer>
+</body>
+</html>

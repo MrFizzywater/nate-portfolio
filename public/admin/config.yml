@@ -8,38 +8,52 @@ media_folder: "public/uploads"
 public_folder: "/uploads"
 
 collections:
-  - name: "prints"
-    label: "Prints & Photography"
-    folder: "src/content/prints"
+  # 1. Photography (Masonry Feed)
+  - name: "photos"
+    label: "Photography"
+    folder: "src/content/photos"
     create: true
     slug: "{{year}}-{{slug}}"
     fields:
       - { label: "Title", name: "title", widget: "string" }
-      - { label: "Series / Collection", name: "series", widget: "string", default: "Atmospheres" }
       - { label: "Year", name: "year", widget: "number", value_type: "int", default: 2026 }
-      - { label: "Artwork Photo", name: "image", widget: "image" }
-      - { label: "Mockups & Gallery Images", name: "gallery", widget: "list", required: false, field: { label: "Image", name: "item", widget: "image" } }
-      - { label: "Edition Type", name: "editionType", widget: "select", options: ["Limited Edition", "Open Edition", "Archival Display"], default: "Limited Edition" }
-      - { label: "Paper & Print Details", name: "paper", widget: "string", default: "Hahnemühle Photo Rag 308gsm" }
-      - { label: "Available Sizes", name: "sizes", widget: "list", default: ["12x18 in", "16x24 in", "24x36 in"] }
-      - { label: "Stripe Checkout URL", name: "stripeUrl", widget: "string", required: false }
-      - { label: "Gelato Template ID", name: "gelatoTemplateId", widget: "string", required: false, hint: "Template ID from your Gelato Dashboard" }
-      - { label: "Price / Edition Note", name: "priceNote", widget: "string", default: "CAD $120.00+", required: false }
-      - { label: "Featured on Homepage", name: "featured", widget: "boolean", default: true }
-      - { label: "Flavor / Inspector Text (Easter Egg)", name: "flavorText", widget: "string", required: false }
-      - { label: "Artist Note / Story", name: "body", widget: "markdown", required: false }
+      - { label: "Photo File", name: "image", widget: "image" }
+      - { label: "Category / Series", name: "category", widget: "string", default: "Landscape" }
+      - { label: "Caption / Story", name: "body", widget: "markdown", required: false }
 
-  - name: "archive"
-    label: "Moving Image (Video Archive)"
-    folder: "src/content/archive"
-    create: true
-    slug: "{{year}}-{{slug}}"
-    fields:
-      - { label: "Project Title", name: "title", widget: "string" }
-      - { label: "Category", name: "category", widget: "select", options: ["Music Video", "Documentary", "Narrative / Short", "Commercial / Brand"], default: "Music Video" }
-      - { label: "Year", name: "year", widget: "number", value_type: "int", default: 2026 }
-      - { label: "Cover Still", name: "coverImage", widget: "image" }
-      - { label: "Video URL / Embed", name: "videoUrl", widget: "string", required: false }
-      - { label: "Role", name: "role", widget: "string", default: "Director / Editor" }
-      - { label: "Client / Band / Partner", name: "client", widget: "string", required: false }
-      - { label: "Notes / Story", name: "body", widget: "markdown", required: false }
+  # 2. Site Pages (About & Contact)
+  - name: "pages"
+    label: "Pages"
+    files:
+      - file: "src/content/pages/about.md"
+        label: "About & Artist Bio"
+        name: "about"
+        fields:
+          - { label: "Page Title", name: "title", widget: "string", default: "About Nate Lacroix" }
+          - { label: "Headline / Focus", name: "headline", widget: "string", default: "Media artist, filmmaker, and photographer based in Midland, Ontario." }
+          - { label: "Portrait / Studio Photo", name: "portrait", widget: "image", required: false }
+          - { label: "Bio / Statement", name: "body", widget: "markdown" }
+
+      - file: "src/content/pages/contact.md"
+        label: "Contact & Inquiries"
+        name: "contact"
+        fields:
+          - { label: "Heading", name: "title", widget: "string", default: "Get In Touch" }
+          - { label: "Introductory Note", name: "intro", widget: "text" }
+          - { label: "Email Address", name: "email", widget: "string", default: "nate@natelacroix.com" }
+          - { label: "Location", name: "location", widget: "string", default: "Midland, ON, Canada" }
+          - { label: "Instagram Link", name: "instagram", widget: "string", required: false }
+
+  # 3. Global Branding & Header Settings
+  - name: "settings"
+    label: "Site Settings"
+    delete: false
+    files:
+      - file: "src/content/settings/general.json"
+        label: "Header & Branding"
+        name: "general"
+        format: "json"
+        fields:
+          - { label: "Header Site Title", name: "siteTitle", widget: "string", default: "Nate Lacroix" }
+          - { label: "Header Subtitle / Tagline", name: "tagline", widget: "string", default: "Photography • Moving Image" }
+          - { label: "Logo Image (Optional)", name: "logo", widget: "image", required: false }

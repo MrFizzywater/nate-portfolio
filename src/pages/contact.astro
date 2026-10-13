@@ -1,0 +1,65 @@
+---
+import { getEntry } from 'astro:content';
+import settings from '../content/settings/general.json';
+import '../styles/global.css';
+
+const entry = await getEntry('pages', 'contact');
+---
+
+<!DOCTYPE html>
+<html lang="en" class="bg-stone-950 text-stone-100 antialiased selection:bg-stone-800">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact — Nate Lacroix</title>
+</head>
+<body class="min-h-screen flex flex-col justify-between font-sans">
+  <header class="border-b border-stone-800/80 sticky top-0 bg-stone-950/90 backdrop-blur-md z-30">
+    <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
+      <div>
+        <a href="/" class="text-xl font-light tracking-tight text-white block">{(settings.siteTitle || 'Nate Lacroix')}</a>
+        <span class="text-[10px] uppercase tracking-[0.25em] text-stone-500">{(settings.tagline || 'Photography • Moving Image')}</span>
+      </div>
+      <nav class="flex items-center gap-6 text-xs uppercase tracking-widest font-medium">
+        <a href="/" class="text-stone-400 hover:text-white transition-colors">Work</a>
+        <a href="/about/" class="text-stone-400 hover:text-white transition-colors">About</a>
+        <a href="/contact/" class="text-white border-b border-white pb-0.5">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-2xl mx-auto px-6 py-24 flex-grow w-full text-center">
+    <span class="text-[10px] uppercase tracking-[0.3em] text-stone-500 font-mono block mb-3">Direct Inquiries</span>
+    <h1 class="text-4xl sm:text-5xl font-light tracking-tight text-white mb-6">
+      {entry?.data.title || "Get In Touch"}
+    </h1>
+
+    <p class="text-stone-400 text-sm sm:text-base font-light leading-relaxed max-w-md mx-auto mb-10">
+      {entry?.data.intro || "For production inquiries, licensing, or collaborations."}
+    </p>
+
+    <div class="space-y-4">
+      {entry?.data.email && (
+        <div>
+          <a 
+            href={`mailto:${entry.data.email}`}
+            class="text-2xl sm:text-3xl font-light text-white hover:text-stone-400 border-b border-stone-700 pb-1 transition-colors"
+          >
+            {entry.data.email}
+          </a>
+        </div>
+      )}
+
+      {entry?.data.location && (
+        <p class="text-[11px] uppercase tracking-[0.25em] text-stone-500 pt-6">
+          {entry.data.location}
+        </p>
+      )}
+    </div>
+  </main>
+
+  <footer class="border-t border-stone-900 py-8 text-center text-[10px] uppercase tracking-widest text-stone-600">
+    &copy; 2026 Nate Lacroix.
+  </footer>
+</body>
+</html>
