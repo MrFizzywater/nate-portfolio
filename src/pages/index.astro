@@ -1,8 +1,14 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import '../styles/global.css';
 
-const prints = await getCollection('prints');
+const rawPrints = await getCollection('prints');
+const prints = await Promise.all(
+  rawPrints.map(async (item) => {
+    const { Content } = await render(item);
+    return { ...item, Content };
+  })
+);
 ---
 
 <!DOCTYPE html>
@@ -31,44 +37,147 @@ const prints = await getCollection('prints');
   <!-- Photo Grid -->
   <main class="max-w-6xl mx-auto px-6 py-16 flex-grow w-full">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-      {prints.map((item) => (
+      {prints.map(({ data, id }) => (
         <article class="group flex flex-col">
-          <div 
-            class="aspect-[4/5] bg-stone-900 overflow-hidden relative border border-stone-800/80 cursor-pointer"
-            data-flavor={item.data.flavorText || "Archival print frame."}
+          <button
+            type="button"
+            class="aspect-[4/5] bg-stone-900 overflow-hidden relative border border-stone-800/80 cursor-zoom-in text-left block w-full"
+            data-flavor={data.flavorText || "Archival print frame."}
+            onclick={`document.getElementById('modal-${id}').showModal()`}
           >
             <img 
-              src={item.data.image} 
-              alt={item.data.title}
+              src={data.image} 
+              alt={data.title}
               class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
               loading="lazy"
-              onerror="this.style.display='none'"
             />
-          </div>
+            <div class="absolute inset-0 bg-stone-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <span class="text-[10px] uppercase tracking-widest bg-stone-950/80 text-white px-3 py-1.5 border border-stone-700">View Edition</span>
+            </div>
+          </button>
+
           <div class="mt-4 space-y-1">
             <div class="flex justify-between items-baseline">
-              <h2 class="text-lg font-light tracking-tight text-white">{item.data.title}</h2>
-              <span class="text-xs text-stone-500 font-mono">{item.data.year}</span>
+              <h2 class="text-lg font-light tracking-tight text-white">{data.title}</h2>
+              <span class="text-xs text-stone-500 font-mono">{data.year}</span>
             </div>
-            <p class="text-[11px] uppercase tracking-wider text-stone-400">
-              {item.data.editionType} &bull; {item.data.paper}
-            </p>
+            <div class="flex justify-between items-center text-[11px] uppercase tracking-wider text-stone-400 pt-0.5">
+              <span>{data.editionType}</span>
+              <span class="font-mono text-stone-300">{data.priceNote}</span>
+            </div>
           </div>
         </article>
       ))}
     </div>
   </main>
 
-  <!-- Status / Flavor Text Footer Bar -->
+  <!-- Lightbox Modals (Isolated outside the grid) -->
+  {prints.map(({ data, id, Content }) => {
+    const allImages = [data.image, ...(data.gallery || [])].filter(Boolean);
+    return (
+      <dialog 
+        id={`modal-${id}`} 
+        class="m-auto p-0 rounded-xs backdrop:bg-stone-950/85 bg-stone-900 text-stone-100 max-w-4xl w-[94vw] max-h-[92vh] overflow-y-auto shadow-2xl border border-stone-800"
+      >
+        <div class="p-6 sm:p-10 relative">
+          <button 
+            type="button"
+            class="absolute top-4 right-4 text-stone-400 hover:text-white text-3xl font-light leading-none cursor-pointer p-2 z-10"
+            onclick={`document.getElementById('modal-${id}').close()`}
+            aria-label="Close"
+          >
+            &times;
+          </button>
+
+          <!-- Main Media & Mockup Gallery -->
+          <div class="space-y-4">
+            <div class="bg-stone-950/60 flex items-center justify-center overflow-hidden max-h-[62vh] border border-stone-800">
+              <img 
+                id={`main-img-${id}`}
+                src={data.image} 
+                alt={data.title} 
+                class="max-h-[62vh] w-auto mx-auto object-contain"
+              />
+            </div>
+
+            {allImages.length > 1 && (
+              <div class="flex gap-3 overflow-x-auto pb-2">
+                {allImages.map((imgUrl, idx) => (
+                  <button 
+                    type="button"
+                    class="h-16 w-16 flex-shrink-0 border border-stone-800 hover:border-stone-400 overflow-hidden cursor-pointer"
+                    onclick={`document.getElementById('main-img-${id}').src = '${imgUrl}'`}
+                  >
+                    <img src={imgUrl} alt={`Thumbnail ${idx}`} class="h-full w-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <!-- Product Details & Checkout -->
+          <div class="border-t border-stone-800 mt-6 pt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-2 space-y-4">
+              <div>
+                <span class="text-[10px] font-mono uppercase tracking-[0.25em] text-stone-500">{data.series} &bull; {data.year}</span>
+                <h3 class="text-2xl sm:text-3xl font-light text-white tracking-tight">{data.title}</h3>
+              </div>
+
+              <div class="text-xs uppercase tracking-wider text-stone-400 space-y-1">
+                <p><span class="text-stone-500">Edition:</span> {data.editionType}</p>
+                <p><span class="text-stone-500">Stock:</span> {data.paper}</p>
+                {data.sizes && data.sizes.length > 0 && (
+                  <p><span class="text-stone-500">Available Sizes:</span> {data.sizes.join(', ')}</p>
+                )}
+              </div>
+
+              <div class="prose prose-invert prose-sm text-stone-300 font-light pt-2">
+                <Content />
+              </div>
+            </div>
+
+            <!-- Purchase Column -->
+            <div class="bg-stone-950 p-6 border border-stone-800/80 flex flex-col justify-between h-fit space-y-4">
+              <div>
+                <span class="text-[10px] uppercase tracking-widest text-stone-500 block">Pricing</span>
+                <span class="text-2xl font-light text-white font-mono mt-1 block">{data.priceNote}</span>
+                <p class="text-[11px] text-stone-500 mt-1">Printed on demand & shipped flat in archival packaging.</p>
+              </div>
+
+              {data.stripeUrl ? (
+                <a 
+                  href={data.stripeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="w-full text-center py-3 bg-white hover:bg-stone-200 text-stone-950 text-xs uppercase tracking-[0.2em] font-medium transition-colors"
+                >
+                  Acquire Edition &rarr;
+                </a>
+              ) : (
+                <a 
+                  href="mailto:nate@natelacroix.com?subject=Print%20Inquiry%20-%20"
+                  class="w-full text-center py-3 border border-stone-700 hover:border-white text-white text-xs uppercase tracking-[0.2em] transition-colors"
+                >
+                  Inquire for Availability
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </dialog>
+    );
+  })}
+
+  <!-- Flavor Inspector Status Bar (Quirk) -->
   <aside id="status-bar" class="border-t border-stone-900 bg-stone-950 py-3 px-6 text-center text-xs font-mono text-stone-500 tracking-wider">
     [READY] Hover over works to inspect. Press 'E' for retro mode.
   </aside>
 
-  <!-- Easter Egg Scripts -->
+  <!-- Easter Eggs & Dialog Listeners -->
   <script>
     // 1. Console Greeting
     console.log(
-      "%c[Nate Lacroix Portfolio]\n%cNothing to inspect here. Go buy a print or touch grass.",
+      "%c[Nate Lacroix Portfolio]\n%cLooking for secret files? Go outside or acquire a print.",
       "font-weight: bold; font-size: 14px; color: #f97316;",
       "color: #888;"
     );
@@ -88,8 +197,25 @@ const prints = await getCollection('prints');
     window.addEventListener('keydown', (e) => {
       if (e.key === 'e' || e.key === 'E') {
         document.body.classList.toggle('grayscale');
-        console.log("[QUIRK] Retro mode toggled.");
+        document.body.classList.toggle('invert');
+        console.log("[QUIRK] CRT Monochrome mode triggered.");
       }
+    });
+
+    // 4. Click outside to close dialog
+    document.querySelectorAll('dialog').forEach((dialog) => {
+      dialog.addEventListener('click', (event) => {
+        const rect = dialog.getBoundingClientRect();
+        const isInDialog = (
+          rect.top <= event.clientY &&
+          event.clientY <= rect.top + rect.height &&
+          rect.left <= event.clientX &&
+          event.clientX <= rect.left + rect.width
+        );
+        if (!isInDialog) {
+          dialog.close();
+        }
+      });
     });
   </script>
 </body>
