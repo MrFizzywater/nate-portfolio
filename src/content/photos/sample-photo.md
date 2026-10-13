@@ -1,7 +1,7 @@
 ---
-title: "Atmospheric Frame 01"
-year: 2026
-image: "/uploads/placeholder.jpg"
-category: "Atmospheres"
+title: High Contrast Love
+year: 2019
+image: /uploads/loveunderpass-04195.jpg
+category: Atmospheres
 ---
-Coastal light and overcast cloud structure.
+Graffiti markings on the walls and pillars of a local underpass path.
