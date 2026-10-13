@@ -9,6 +9,31 @@ const videos = await Promise.all(
     return { ...item, Content };
   })
 );
+
+// Helper to convert various video URLs to clean embed URLs
+function getEmbedUrl(url: string = '') {
+  if (!url) return null;
+
+  // 1. YouTube standard watch, youtu.be shortlinks, or shorts
+  const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
+  if (ytMatch) {
+    return { type: 'iframe', src: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0` };
+  }
+
+  // 2. Bunny Stream iframe embeds or direct URLs
+  if (url.includes('iframe.mediadelivery.net')) {
+    const bunnySrc = url.includes('autoplay') ? url : `${url}${url.includes('?') ? '&' : '?'}autoplay=true`;
+    return { type: 'iframe', src: bunnySrc };
+  }
+
+  // 3. Direct video file (.mp4, .webm)
+  if (url.endsWith('.mp4') || url.endsWith('.webm')) {
+    return { type: 'video', src: url };
+  }
+
+  // Fallback: regular iframe
+  return { type: 'iframe', src: url };
+}
 ---
 
 <!DOCTYPE html>
@@ -42,57 +67,140 @@ const videos = await Promise.all(
     </div>
 
     <div class="divide-y divide-stone-900 border-t border-b border-stone-900">
-      {videos.map(({ data, Content }) => (
-        <article class="py-10 grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-          <div class="aspect-video bg-stone-900 border border-stone-800 overflow-hidden relative">
-            <img 
-              src={data.coverImage} 
-              alt={data.title} 
-              class="w-full h-full object-cover" 
-              loading="lazy" 
-            />
-          </div>
+      {videos.map(({ data, id, Content }) => {
+        const embed = getEmbedUrl(data.videoUrl);
+        return (
+          <article class="py-10 grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+            <!-- Clickable Video Poster -->
+            <button
+              type="button"
+              class="aspect-video bg-stone-900 border border-stone-800 overflow-hidden relative group text-left cursor-pointer w-full block"
+              onclick={`document.getElementById('video-modal-${id}').showModal()`}
+            >
+              <img 
+                src={data.coverImage} 
+                alt={data.title} 
+                class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" 
+                loading="lazy" 
+              />
+              <div class="absolute inset-0 bg-stone-950/40 group-hover:bg-stone-950/20 transition-colors flex items-center justify-center">
+                <div class="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <span class="text-white text-xs pl-0.5">&#9658;</span>
+                </div>
+              </div>
+            </button>
 
-          <div class="md:col-span-2 space-y-3">
-            <div class="flex items-center gap-3 text-[11px] font-mono uppercase tracking-widest text-stone-500">
-              <span>{data.category}</span>
-              <span>&bull;</span>
-              <span>{data.year}</span>
-              {data.client && (
-                <>
-                  <span>&bull;</span>
-                  <span class="text-stone-400">{data.client}</span>
-                </>
-              )}
-            </div>
+            <!-- Details -->
+            <div class="md:col-span-2 space-y-3">
+              <div class="flex items-center gap-3 text-[11px] font-mono uppercase tracking-widest text-stone-500">
+                <span>{data.category}</span>
+                <span>&bull;</span>
+                <span>{data.year}</span>
+                {data.client && (
+                  <>
+                    <span>&bull;</span>
+                    <span class="text-stone-400">{data.client}</span>
+                  </>
+                )}
+              </div>
 
-            <h2 class="text-2xl font-light text-white tracking-tight">{data.title}</h2>
-            <p class="text-xs uppercase tracking-wider text-stone-400">Role: {data.role}</p>
+              <h2 class="text-2xl font-light text-white tracking-tight">{data.title}</h2>
+              <p class="text-xs uppercase tracking-wider text-stone-400">Role: {data.role}</p>
 
-            <div class="text-stone-300 text-sm font-light leading-relaxed prose prose-invert">
-              <Content />
-            </div>
+              <div class="text-stone-300 text-sm font-light leading-relaxed prose prose-invert">
+                <Content />
+              </div>
 
-            {data.videoUrl && (
               <div class="pt-2">
-                <a 
-                  href={data.videoUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  class="inline-block text-xs uppercase tracking-[0.2em] border border-stone-700 hover:border-white text-stone-200 hover:text-white px-4 py-2 transition-colors"
+                <button 
+                  type="button"
+                  class="inline-block text-xs uppercase tracking-[0.2em] border border-stone-700 hover:border-white text-stone-200 hover:text-white px-4 py-2 transition-colors cursor-pointer"
+                  onclick={`document.getElementById('video-modal-${id}').showModal()`}
                 >
                   Watch Reel / Video &rarr;
-                </a>
+                </button>
               </div>
-            )}
-          </div>
-        </article>
-      ))}
+            </div>
+
+            <!-- Video Lightbox Dialog -->
+            <dialog 
+              id={`video-modal-${id}`} 
+              class="m-auto p-0 rounded-xs backdrop:bg-stone-950/90 bg-stone-900 text-stone-100 max-w-5xl w-[94vw] max-h-[92vh] overflow-hidden shadow-2xl border border-stone-800"
+              data-video-dialog
+            >
+              <div class="relative bg-black flex flex-col">
+                <div class="flex items-center justify-between p-4 bg-stone-950 border-b border-stone-850">
+                  <span class="text-xs uppercase tracking-widest text-stone-400 truncate pr-4">{data.title}</span>
+                  <button 
+                    type="button"
+                    class="text-stone-400 hover:text-white text-2xl font-light leading-none cursor-pointer px-2"
+                    onclick={`document.getElementById('video-modal-${id}').close()`}
+                    aria-label="Close"
+                  >
+                    &times;
+                  </button>
+                </div>
+
+                <div class="aspect-video w-full bg-black flex items-center justify-center">
+                  {embed?.type === 'iframe' && (
+                    <iframe 
+                      src={embed.src} 
+                      title={data.title}
+                      class="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowfullscreen
+                    ></iframe>
+                  )}
+                  {embed?.type === 'video' && (
+                    <video controls autoplay class="w-full h-full object-contain">
+                      <source src={embed.src} type="video/mp4" />
+                    </video>
+                  )}
+                  {!embed && (
+                    <p class="text-stone-500 text-xs font-mono">No video link provided for this entry.</p>
+                  )}
+                </div>
+              </div>
+            </dialog>
+          </article>
+        );
+      })}
     </div>
   </main>
 
   <footer class="border-t border-stone-900 py-8 text-center text-[10px] uppercase tracking-widest text-stone-600">
     &copy; 2026 Nate Lacroix. All rights reserved.
   </footer>
+
+  <script>
+    // Stop video playback when dialog closes & support backdrop clicks
+    document.querySelectorAll('[data-video-dialog]').forEach((dialog) => {
+      dialog.addEventListener('close', () => {
+        const iframe = dialog.querySelector('iframe');
+        if (iframe) {
+          const src = iframe.src;
+          iframe.src = '';
+          iframe.src = src; // Reloading stops YouTube/Bunny audio
+        }
+        const video = dialog.querySelector('video');
+        if (video) {
+          video.pause();
+        }
+      });
+
+      dialog.addEventListener('click', (event) => {
+        const rect = dialog.getBoundingClientRect();
+        const isInDialog = (
+          rect.top <= event.clientY &&
+          event.clientY <= rect.top + rect.height &&
+          rect.left <= event.clientX &&
+          event.clientX <= rect.left + rect.width
+        );
+        if (!isInDialog) {
+          (dialog as HTMLDialogElement).close();
+        }
+      });
+    });
+  </script>
 </body>
 </html>

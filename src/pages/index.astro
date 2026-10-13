@@ -17,8 +17,25 @@ const prints = await Promise.all(
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nate Lacroix — Photographic Editions</title>
+  <style>
+    /* Konami CRT scanline & phosphor green mode */
+    body.crt-retro-mode {
+      filter: contrast(1.2) brightness(1.1) sepia(0.8) hue-rotate(60deg) !important;
+      text-shadow: 0 0 3px #39ff14 !important;
+    }
+    body.crt-retro-mode::before {
+      content: " ";
+      display: block;
+      position: fixed;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
+      z-index: 100;
+      background-size: 100% 3px, 4px 100%;
+      pointer-events: none;
+    }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between font-sans">
+<body class="min-h-screen flex flex-col justify-between font-sans transition-all duration-300">
 
   <!-- Header -->
   <header class="border-b border-stone-800/80 sticky top-0 bg-stone-950/90 backdrop-blur-md z-20">
@@ -71,7 +88,7 @@ const prints = await Promise.all(
     </div>
   </main>
 
-  <!-- Lightbox Modals (Isolated outside the grid) -->
+  <!-- Lightbox Modals -->
   {prints.map(({ data, id, Content }) => {
     const allImages = [data.image, ...(data.gallery || [])].filter(Boolean);
     return (
@@ -89,7 +106,6 @@ const prints = await Promise.all(
             &times;
           </button>
 
-          <!-- Main Media & Mockup Gallery -->
           <div class="space-y-4">
             <div class="bg-stone-950/60 flex items-center justify-center overflow-hidden max-h-[62vh] border border-stone-800">
               <img 
@@ -115,7 +131,6 @@ const prints = await Promise.all(
             )}
           </div>
 
-          <!-- Product Details & Checkout -->
           <div class="border-t border-stone-800 mt-6 pt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="md:col-span-2 space-y-4">
               <div>
@@ -136,7 +151,6 @@ const prints = await Promise.all(
               </div>
             </div>
 
-            <!-- Purchase Column -->
             <div class="bg-stone-950 p-6 border border-stone-800/80 flex flex-col justify-between h-fit space-y-4">
               <div>
                 <span class="text-[10px] uppercase tracking-widest text-stone-500 block">Pricing</span>
@@ -168,12 +182,12 @@ const prints = await Promise.all(
     );
   })}
 
-  <!-- Flavor Inspector Status Bar (Quirk) -->
+  <!-- Status / Flavor Text Footer Bar -->
   <aside id="status-bar" class="border-t border-stone-900 bg-stone-950 py-3 px-6 text-center text-xs font-mono text-stone-500 tracking-wider">
-    [READY] Hover over works to inspect. Press 'E' for retro mode.
+    [READY] Hover over works to inspect.
   </aside>
 
-  <!-- Easter Eggs & Dialog Listeners -->
+  <!-- Scripts -->
   <script>
     // 1. Console Greeting
     console.log(
@@ -189,20 +203,40 @@ const prints = await Promise.all(
         if (statusBar) statusBar.textContent = `> ${el.getAttribute('data-flavor')}`;
       });
       el.addEventListener('mouseleave', () => {
-        if (statusBar) statusBar.textContent = '[READY] Hover over works to inspect. Press \'E\' for retro mode.';
+        if (statusBar) statusBar.textContent = '[READY] Hover over works to inspect.';
       });
     });
 
-    // 3. Retro CRT Mode Toggle (Hotkey: E)
+    // 3. Konami Code: ↑ ↑ ↓ ↓ ← → ← → B A
+    const konamiCode = [
+      'ArrowUp', 'ArrowUp',
+      'ArrowDown', 'ArrowDown',
+      'ArrowLeft', 'ArrowRight',
+      'ArrowLeft', 'ArrowRight',
+      'b', 'a'
+    ];
+    let konamiIndex = 0;
+
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'e' || e.key === 'E') {
-        document.body.classList.toggle('grayscale');
-        document.body.classList.toggle('invert');
-        console.log("[QUIRK] CRT Monochrome mode triggered.");
+      const expectedKey = konamiCode[konamiIndex];
+      if (e.key.toLowerCase() === expectedKey.toLowerCase()) {
+        konamiIndex++;
+        if (konamiIndex === konamiCode.length) {
+          document.body.classList.toggle('crt-retro-mode');
+          if (statusBar) {
+            statusBar.textContent = document.body.classList.contains('crt-retro-mode') 
+              ? '*** 1993 BROADCAST CRT MONITOR EMULATION ENABLED ***' 
+              : '[READY] CRT emulation restored to standard feed.';
+          }
+          console.log("[EASTER EGG] Konami Code accepted. 30 Lives Granted.");
+          konamiIndex = 0;
+        }
+      } else {
+        konamiIndex = 0;
       }
     });
 
-    // 4. Click outside to close dialog
+    // 4. Dialog Click-Outside Dismiss
     document.querySelectorAll('dialog').forEach((dialog) => {
       dialog.addEventListener('click', (event) => {
         const rect = dialog.getBoundingClientRect();
