@@ -8,6 +8,7 @@ paper: Hahnemühle Photo Rag 308gsm
 sizes:
   - 12x18 in
   - 16x24 in
+gelatoTemplateId: f0118e8a-0031-424e-86c3-84cdc0cf358d
 featured: true
 flavorText: Exposure taken at dusk. Smells like rain and damp pine needles.
 ---
