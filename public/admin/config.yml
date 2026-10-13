@@ -22,7 +22,8 @@ collections:
       - { label: "Edition Type", name: "editionType", widget: "select", options: ["Limited Edition", "Open Edition", "Archival Display"], default: "Limited Edition" }
       - { label: "Paper & Print Details", name: "paper", widget: "string", default: "Hahnemühle Photo Rag 308gsm" }
       - { label: "Available Sizes", name: "sizes", widget: "list", default: ["12x18 in", "16x24 in", "24x36 in"] }
-      - { label: "Stripe Checkout URL", name: "stripeUrl", widget: "string", required: false, hint: "Stripe Payment Link URL" }
+      - { label: "Stripe Checkout URL", name: "stripeUrl", widget: "string", required: false }
+      - { label: "Gelato Template ID", name: "gelatoTemplateId", widget: "string", required: false, hint: "Template ID from your Gelato Dashboard" }
       - { label: "Price / Edition Note", name: "priceNote", widget: "string", default: "CAD $120.00+", required: false }
       - { label: "Featured on Homepage", name: "featured", widget: "boolean", default: true }
       - { label: "Flavor / Inspector Text (Easter Egg)", name: "flavorText", widget: "string", required: false }
@@ -38,7 +39,7 @@ collections:
       - { label: "Category", name: "category", widget: "select", options: ["Music Video", "Documentary", "Narrative / Short", "Commercial / Brand"], default: "Music Video" }
       - { label: "Year", name: "year", widget: "number", value_type: "int", default: 2026 }
       - { label: "Cover Still", name: "coverImage", widget: "image" }
-      - { label: "Video URL / Embed", name: "videoUrl", widget: "string", required: false, hint: "Vimeo, YouTube, or MP4 URL" }
+      - { label: "Video URL / Embed", name: "videoUrl", widget: "string", required: false }
       - { label: "Role", name: "role", widget: "string", default: "Director / Editor" }
       - { label: "Client / Band / Partner", name: "client", widget: "string", required: false }
       - { label: "Notes / Story", name: "body", widget: "markdown", required: false }

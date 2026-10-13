@@ -13,6 +13,7 @@ const prints = defineCollection({
     paper: z.string().default('Hahnemühle Photo Rag 308gsm'),
     sizes: z.array(z.string()).default(['12x18 in', '16x24 in']),
     stripeUrl: z.string().optional(),
+    gelatoTemplateId: z.string().optional(),
     priceNote: z.string().default('CAD $120.00+'),
     featured: z.boolean().default(true),
     flavorText: z.string().optional(),
