@@ -15,6 +15,7 @@ const collections = await getBunnyGalleries();
 </head>
 <body class="min-h-screen flex flex-col justify-between font-sans">
 
+  <!-- Persistent Header -->
   <header class="border-b border-stone-800/80 sticky top-0 bg-stone-950/90 backdrop-blur-md z-30">
     <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
       <div>
@@ -43,32 +44,68 @@ const collections = await getBunnyGalleries();
       </div>
     ) : (
       <div class="space-y-16">
-        {collections.map((col) => (
+        {collections.map((col, colIdx) => (
           <section>
             <div class="border-b border-stone-800/80 pb-3 mb-8 flex justify-between items-baseline">
               <h2 class="text-2xl font-light text-white tracking-tight">{col.title}</h2>
               <span class="text-xs font-mono text-stone-500">{col.images.length} frames</span>
             </div>
 
+            <!-- Auto Masonry Grid -->
             <div class="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-              {col.images.map((img) => (
-                <div class="break-inside-avoid bg-stone-900/40 border border-stone-800/70 p-2 overflow-hidden group">
-                  <a 
-                    href={img.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    class="block overflow-hidden relative cursor-zoom-in"
-                  >
-                    <img 
-                      src={img.url} 
-                      alt={img.name} 
-                      class="w-full h-auto object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
-                      loading="lazy" 
-                    />
-                  </a>
-                  <p class="text-[11px] font-mono text-stone-400 mt-2 px-1 capitalize">{img.name}</p>
-                </div>
-              ))}
+              {col.images.map((img, imgIdx) => {
+                const modalId = `modal-${colIdx}-${imgIdx}`;
+                return (
+                  <article class="break-inside-avoid bg-stone-900/40 border border-stone-800/70 p-2 overflow-hidden group">
+                    <button
+                      type="button"
+                      class="block w-full text-left overflow-hidden relative cursor-zoom-in"
+                      onclick={`document.getElementById('${modalId}').showModal()`}
+                    >
+                      <img 
+                        src={img.url} 
+                        alt={img.name} 
+                        class="w-full h-auto object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                        loading="lazy" 
+                      />
+                      <div class="absolute inset-0 bg-stone-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span class="text-[10px] uppercase tracking-widest bg-stone-950/80 text-white px-3 py-1.5 border border-stone-700">Enlarge</span>
+                      </div>
+                    </button>
+                    <p class="text-[11px] font-mono text-stone-400 mt-2 px-1 capitalize">{img.name}</p>
+
+                    <!-- Native Lightbox Modal -->
+                    <dialog 
+                      id={modalId}
+                      class="m-auto p-0 rounded-xs backdrop:bg-stone-950/85 bg-stone-900 text-stone-100 max-w-5xl w-[94vw] max-h-[92vh] overflow-y-auto shadow-2xl border border-stone-800"
+                    >
+                      <div class="p-6 sm:p-8 relative">
+                        <button 
+                          type="button"
+                          class="absolute top-4 right-4 text-stone-400 hover:text-white text-3xl font-light cursor-pointer leading-none p-2 z-10"
+                          onclick={`document.getElementById('${modalId}').close()`}
+                          aria-label="Close"
+                        >
+                          &times;
+                        </button>
+                        
+                        <div class="bg-black/50 flex items-center justify-center max-h-[75vh] overflow-hidden mb-4">
+                          <img 
+                            src={img.url} 
+                            alt={img.name} 
+                            class="max-h-[75vh] w-auto mx-auto object-contain" 
+                          />
+                        </div>
+
+                        <div class="border-t border-stone-800 pt-3 flex justify-between items-center text-xs font-mono text-stone-400">
+                          <span class="capitalize text-stone-200">{img.name}</span>
+                          <span class="text-[10px] uppercase tracking-widest text-stone-500">{col.title}</span>
+                        </div>
+                      </div>
+                    </dialog>
+                  </article>
+                );
+              })}
             </div>
           </section>
         ))}
@@ -79,5 +116,23 @@ const collections = await getBunnyGalleries();
   <footer class="border-t border-stone-900 py-8 text-center text-[10px] uppercase tracking-widest text-stone-600">
     &copy; 2026 {settings.siteTitle || "Nate Lacroix"}.
   </footer>
+
+  <script>
+    // Enable closing dialog when clicking the backdrop
+    document.querySelectorAll('dialog').forEach((dialog) => {
+      dialog.addEventListener('click', (event) => {
+        const rect = dialog.getBoundingClientRect();
+        const isInDialog = (
+          rect.top <= event.clientY &&
+          event.clientY <= rect.top + rect.height &&
+          rect.left <= event.clientX &&
+          event.clientX <= rect.left + rect.width
+        );
+        if (!isInDialog) {
+          (dialog as HTMLDialogElement).close();
+        }
+      });
+    });
+  </script>
 </body>
 </html>
