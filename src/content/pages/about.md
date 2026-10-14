@@ -3,14 +3,15 @@ title: About Nate Lacroix
 headline: Media artist, filmmaker, and photographer based in Midland, Ontario.
 portrait: /uploads/20181221-dsc00193_1.jpg
 ---
-Nate Lacroix is an independent filmmaker and media artist.
+Nate Lacroix is a filmmaker, photographer, and media artist.
 
-His moving-image work centers on atmospheric music videos, narrative shorts, and long-form visual archives characterized by deliberate pacing and sharp editorial command.
+His work spans atmospheric motion sequences, long-form visual archives, and deliberate photographic studies defined by texture, natural light, and sharp editorial control.
 
-Currently accepting commissions for:
+Currently accepting commissions and partnerships for:
 
-* **Music Videos & Short Films:** Artist-driven, visually daring collaborations.
-* **Comprehensive Client Productions:** Full-scope visual commissions requiring complete creative leadership and final editorial control.
-* **Creative Consulting & Post Strategy:** High-level narrative architecture, aesthetic direction, and editorial consulting for complex productions.
+* **Music Videos & Short Films:** Artist-driven, visually focused cinematic collaborations.
+* **High-Scope Client Productions:** Full-lifecycle visual commissions requiring comprehensive creative leadership and editorial stewardship.
+* **Photographic Editions & Select Stills:** Archival location studies, select editorial commissions, and visual archives.
+* **Creative Consulting & Story Architecture:** High-level narrative direction, aesthetic framing, and post-production strategy.
 
-*Inquiries are evaluated on creative alignment and project scope.*
+*Inquiries are evaluated on creative alignment and production scope.*
