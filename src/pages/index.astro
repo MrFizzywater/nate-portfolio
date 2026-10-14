@@ -15,7 +15,6 @@ function getRandomItems<T>(arr: T[], count: number): T[] {
   return shuffled.slice(0, count);
 }
 
-// 6 curated frames for a balanced 3-column / 2-row photo grid
 const randomPhotos = getRandomItems(allBunnyImages, 6);
 
 // 2. Fetch About Entry
@@ -35,8 +34,10 @@ function getEmbedUrl(url: string = '') {
     return { type: 'iframe', src: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0` };
   }
   if (url.includes('iframe.mediadelivery.net')) {
-    const bunnySrc = url.includes('autoplay') ? url : `${url}${url.includes('?') ? '&' : '?'}autoplay=true`;
-    return { type: 'iframe', src: bunnySrc };
+    // Clean out any existing autoplay params so Bunny does not autoplay on load
+    const cleanUrl = url.replace(/([?&])autoplay=(true|1|false|0)(&|$)/, '$1').replace(/[?&]$/, '');
+    const separator = cleanUrl.includes('?') ? '&' : '?';
+    return { type: 'iframe', src: `${cleanUrl}${separator}autoplay=true` };
   }
   if (url.endsWith('.mp4') || url.endsWith('.webm')) {
     return { type: 'video', src: url };
@@ -83,10 +84,10 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
 
   <main class="max-w-6xl mx-auto px-6 py-8 flex-grow w-full space-y-12">
 
-    <!-- UPPER STAGE: Context & Video Feature (Tightened Hero Area) -->
+    <!-- UPPER STAGE: Context & Video Feature -->
     <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch pt-2">
       
-      <!-- Left Column: Artist Context & Quick Navigation -->
+      <!-- Left Column: Artist Context -->
       <div class="lg:col-span-5 flex flex-col justify-between bg-stone-900/30 border border-stone-800/80 p-6 sm:p-8">
         <div class="space-y-4">
           <div class="flex items-center justify-between">
@@ -131,7 +132,7 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
             <button
               type="button"
               class="aspect-video w-full bg-stone-950 border border-stone-800 overflow-hidden relative group block cursor-pointer text-left"
-              onclick="document.getElementById('spotlight-video-modal').showModal()"
+              data-open-spotlight
             >
               <img 
                 src={featuredVideo.data.coverImage} 
@@ -155,8 +156,8 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
               </div>
               <button 
                 type="button" 
-                class="text-[10px] uppercase font-mono tracking-widest border border-stone-700 px-3 py-1 text-stone-300 hover:text-white hover:border-stone-500 transition-colors"
-                onclick="document.getElementById('spotlight-video-modal').showModal()"
+                class="text-[10px] uppercase font-mono tracking-widest border border-stone-700 px-3 py-1 text-stone-300 hover:text-white hover:border-stone-500 transition-colors cursor-pointer"
+                data-open-spotlight
               >
                 Watch Now
               </button>
@@ -171,7 +172,7 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
 
     </section>
 
-    <!-- LOWER STAGE: Tight Photographic Grid (Eliminates Awkward Vertical Columns) -->
+    <!-- LOWER STAGE: Photographic Grid -->
     <section class="space-y-6 pt-4">
       <div class="flex items-baseline justify-between border-b border-stone-800/80 pb-3">
         <div>
@@ -193,7 +194,6 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
         </div>
       </div>
 
-      <!-- Tight 3-Column Uniform Ratio Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {randomPhotos.map((img, idx) => {
           const modalId = `home-modal-${idx}`;
@@ -257,12 +257,11 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
 
   </main>
 
-  <!-- Video Modal Dialog -->
+  <!-- Video Modal Dialog (Uses data-src so it only loads on explicit user click) -->
   {featuredVideo && (
     <dialog 
       id="spotlight-video-modal" 
       class="m-auto p-0 rounded-xs backdrop:bg-stone-950/90 bg-stone-900 text-stone-100 max-w-5xl w-[94vw] max-h-[92vh] overflow-hidden shadow-2xl border border-stone-800"
-      data-video-dialog
     >
       <div class="relative bg-black flex flex-col">
         <div class="flex items-center justify-between p-4 bg-stone-950 border-b border-stone-800">
@@ -281,7 +280,7 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
         <div class="aspect-video w-full bg-black flex items-center justify-center">
           {videoEmbed?.type === 'iframe' && (
             <iframe 
-              src={videoEmbed.src} 
+              data-src={videoEmbed.src}
               title={featuredVideo.data.title}
               class="w-full h-full border-0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -289,8 +288,8 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
             ></iframe>
           )}
           {videoEmbed?.type === 'video' && (
-            <video controls autoplay class="w-full h-full object-contain">
-              <source src={videoEmbed.src} type="video/mp4" />
+            <video controls class="w-full h-full object-contain">
+              <source data-src={videoEmbed.src} type="video/mp4" />
             </video>
           )}
           {!videoEmbed && (
@@ -301,7 +300,6 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
     </dialog>
   )}
 
-  <!-- Clean Minimal Footer -->
   <footer class="border-t border-stone-900 py-6 px-6 mt-12">
     <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] font-mono text-stone-500 uppercase tracking-widest">
       <span>&copy; 2026 {settings.siteTitle || "Nate Lacroix"}. All rights reserved.</span>
@@ -326,17 +324,39 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
       });
     });
 
-    // Pause video playback on modal close
-    const videoDialog = document.getElementById('spotlight-video-modal');
+    const videoDialog = document.getElementById('spotlight-video-modal') as HTMLDialogElement | null;
+    const iframe = videoDialog?.querySelector('iframe');
+    const video = videoDialog?.querySelector('video');
+    const videoSource = video?.querySelector('source');
+
+    // Open video on demand (only load src when user clicks)
+    document.querySelectorAll('[data-open-spotlight]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (!videoDialog) return;
+
+        if (iframe && iframe.dataset.src) {
+          iframe.src = iframe.dataset.src;
+        }
+
+        if (video && videoSource && videoSource.dataset.src) {
+          videoSource.src = videoSource.dataset.src;
+          video.load();
+          video.play();
+        }
+
+        videoDialog.showModal();
+      });
+    });
+
+    // Cleanly stop and unload video on modal close
     videoDialog?.addEventListener('close', () => {
-      const iframe = videoDialog.querySelector('iframe');
       if (iframe) {
-        const src = iframe.src;
-        iframe.src = '';
-        iframe.src = src;
+        iframe.removeAttribute('src'); // Unloads the iframe completely so Bunny stops playing
       }
-      const video = videoDialog.querySelector('video');
-      if (video) video.pause();
+      if (video) {
+        video.pause();
+        video.currentTime = 0;
+      }
     });
   </script>
 </body>

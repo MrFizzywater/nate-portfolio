@@ -18,8 +18,9 @@ function getEmbedUrl(url: string = '') {
     return { type: 'iframe', src: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0` };
   }
   if (url.includes('iframe.mediadelivery.net')) {
-    const bunnySrc = url.includes('autoplay') ? url : `${url}${url.includes('?') ? '&' : '?'}autoplay=true`;
-    return { type: 'iframe', src: bunnySrc };
+    const cleanUrl = url.replace(/([?&])autoplay=(true|1|false|0)(&|$)/, '$1').replace(/[?&]$/, '');
+    const separator = cleanUrl.includes('?') ? '&' : '?';
+    return { type: 'iframe', src: `${cleanUrl}${separator}autoplay=true` };
   }
   if (url.endsWith('.mp4') || url.endsWith('.webm')) {
     return { type: 'video', src: url };
@@ -73,12 +74,13 @@ function getEmbedUrl(url: string = '') {
       <div class="divide-y divide-stone-900 border-t border-b border-stone-900">
         {videos.map(({ data, id, Content }) => {
           const embed = getEmbedUrl(data.videoUrl);
+          const modalId = `video-modal-${id}`;
           return (
             <article class="py-10 grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
               <button
                 type="button"
                 class="aspect-video bg-stone-900 border border-stone-800 overflow-hidden relative group text-left cursor-pointer w-full block"
-                onclick={`document.getElementById('video-modal-${id}').showModal()`}
+                data-open-modal={modalId}
               >
                 <img 
                   src={data.coverImage} 
@@ -117,15 +119,16 @@ function getEmbedUrl(url: string = '') {
                   <button 
                     type="button"
                     class="inline-block text-xs uppercase tracking-[0.2em] border border-stone-700 hover:border-white text-stone-200 hover:text-white px-4 py-2 transition-colors cursor-pointer"
-                    onclick={`document.getElementById('video-modal-${id}').showModal()`}
+                    data-open-modal={modalId}
                   >
                     Watch Reel / Video &rarr;
                   </button>
                 </div>
               </div>
 
+              <!-- Lightbox Modal -->
               <dialog 
-                id={`video-modal-${id}`} 
+                id={modalId} 
                 class="m-auto p-0 rounded-xs backdrop:bg-stone-950/90 bg-stone-900 text-stone-100 max-w-5xl w-[94vw] max-h-[92vh] overflow-hidden shadow-2xl border border-stone-800"
                 data-video-dialog
               >
@@ -135,7 +138,7 @@ function getEmbedUrl(url: string = '') {
                     <button 
                       type="button"
                       class="text-stone-400 hover:text-white text-2xl font-light leading-none cursor-pointer px-2"
-                      onclick={`document.getElementById('video-modal-${id}').close()`}
+                      onclick={`document.getElementById('${modalId}').close()`}
                       aria-label="Close"
                     >
                       &times;
@@ -145,7 +148,7 @@ function getEmbedUrl(url: string = '') {
                   <div class="aspect-video w-full bg-black flex items-center justify-center">
                     {embed?.type === 'iframe' && (
                       <iframe 
-                        src={embed.src} 
+                        data-src={embed.src} 
                         title={data.title}
                         class="w-full h-full border-0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -153,8 +156,8 @@ function getEmbedUrl(url: string = '') {
                       ></iframe>
                     )}
                     {embed?.type === 'video' && (
-                      <video controls autoplay class="w-full h-full object-contain">
-                        <source src={embed.src} type="video/mp4" />
+                      <video controls class="w-full h-full object-contain">
+                        <source data-src={embed.src} type="video/mp4" />
                       </video>
                     )}
                     {!embed && (
@@ -175,16 +178,43 @@ function getEmbedUrl(url: string = '') {
   </footer>
 
   <script>
+    // Dynamic open handlers (inject src on click only)
+    document.querySelectorAll('[data-open-modal]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const modalId = btn.getAttribute('data-open-modal');
+        if (!modalId) return;
+        const dialog = document.getElementById(modalId) as HTMLDialogElement | null;
+        if (!dialog) return;
+
+        const iframe = dialog.querySelector('iframe');
+        if (iframe && iframe.dataset.src) {
+          iframe.src = iframe.dataset.src;
+        }
+
+        const video = dialog.querySelector('video');
+        const source = video?.querySelector('source');
+        if (video && source && source.dataset.src) {
+          source.src = source.dataset.src;
+          video.load();
+          video.play();
+        }
+
+        dialog.showModal();
+      });
+    });
+
+    // Teardown and pause on modal close
     document.querySelectorAll('[data-video-dialog]').forEach((dialog) => {
       dialog.addEventListener('close', () => {
         const iframe = dialog.querySelector('iframe');
         if (iframe) {
-          const src = iframe.src;
-          iframe.src = '';
-          iframe.src = src;
+          iframe.removeAttribute('src'); // Unload immediately
         }
         const video = dialog.querySelector('video');
-        if (video) video.pause();
+        if (video) {
+          video.pause();
+          video.currentTime = 0;
+        }
       });
 
       dialog.addEventListener('click', (event) => {
