@@ -4,7 +4,7 @@ import { getBunnyGalleries } from '../lib/bunny';
 import settings from '../content/settings/general.json';
 import '../styles/global.css';
 
-// 1. Fetch Bunny Galleries & Pick 6 Random Frames
+// 1. Fetch Bunny Galleries & Flatten
 const collections = await getBunnyGalleries();
 const allBunnyImages = collections.flatMap(c => 
   c.images.map(img => ({ ...img, collectionTitle: c.title, collectionFolder: c.folder }))
@@ -15,13 +15,14 @@ function getRandomItems<T>(arr: T[], count: number): T[] {
   return shuffled.slice(0, count);
 }
 
+// 6 curated frames for a balanced 3-column / 2-row photo grid
 const randomPhotos = getRandomItems(allBunnyImages, 6);
 
-// 2. Fetch About Entry for Context Blurb
+// 2. Fetch About Entry
 const aboutEntry = await getEntry('pages', 'about');
 const bioSnippet = aboutEntry?.data.headline || "Media artist, filmmaker, and photographer exploring atmospheric texture, pacing, and visual resonance.";
 
-// 3. Fetch Archive Videos & Pick 1 at Random
+// 3. Fetch Random Video Project
 const allVideos = await getCollection('archive');
 const featuredVideo = allVideos.length > 0 
   ? allVideos[Math.floor(Math.random() * allVideos.length)] 
@@ -57,7 +58,7 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
 
   <!-- Header -->
   <header class="border-b border-stone-800/80 sticky top-0 bg-stone-950/90 backdrop-blur-md z-30">
-    <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="max-w-6xl mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
       <div>
         <a href="/" class="text-xl font-light tracking-tight text-white block">
           {settings.logo ? (
@@ -80,71 +81,151 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
     </div>
   </header>
 
-  <!-- Main Hero / Grid Experience -->
-  <main class="max-w-6xl mx-auto px-6 py-12 flex-grow w-full space-y-16">
+  <main class="max-w-6xl mx-auto px-6 py-8 flex-grow w-full space-y-12">
 
-    <!-- 1. The Dynamic Masonry Photo Wall (Randomized Bunny Frames + Context Blurb) -->
-    <section>
-      <div class="flex items-baseline justify-between border-b border-stone-800/80 pb-3 mb-8">
-        <div>
-          <span class="text-[10px] font-mono uppercase tracking-[0.3em] text-stone-500 block">Catalog Sampling</span>
-          <h2 class="text-xl sm:text-2xl font-light tracking-tight text-white">Selected Visual Frames</h2>
+    <!-- UPPER STAGE: Context & Video Feature (Tightened Hero Area) -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch pt-2">
+      
+      <!-- Left Column: Artist Context & Quick Navigation -->
+      <div class="lg:col-span-5 flex flex-col justify-between bg-stone-900/30 border border-stone-800/80 p-6 sm:p-8">
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono uppercase tracking-[0.25em] text-stone-500">Artist Focus</span>
+            <span class="text-[10px] font-mono text-stone-600">44.75° N, 79.88° W</span>
+          </div>
+
+          <h1 class="text-2xl sm:text-3xl font-light tracking-tight text-white leading-snug">
+            "{bioSnippet}"
+          </h1>
+
+          <p class="text-xs text-stone-400 font-light leading-relaxed pt-2">
+            Independent media production, atmospheric photography archives, and directorial motion sequences based in Midland, Ontario.
+          </p>
         </div>
-        <a href="/galleries/" class="text-xs font-mono uppercase tracking-widest text-stone-400 hover:text-white transition-colors">
-          Browse All Collections &rarr;
-        </a>
+
+        <div class="pt-6 mt-6 border-t border-stone-800/80 flex items-center justify-between text-xs font-mono">
+          <a href="/about/" class="text-stone-300 hover:text-white uppercase tracking-widest text-[11px] transition-colors">
+            Read Bio &rarr;
+          </a>
+          <a href="/contact/" class="text-stone-400 hover:text-stone-200 uppercase tracking-widest text-[11px] transition-colors">
+            Inquiries &rarr;
+          </a>
+        </div>
       </div>
 
-      <div class="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-        
-        <!-- Context Card 01: About Blurb Embedded in Grid -->
-        <article class="break-inside-avoid bg-stone-900/60 border border-stone-800/90 p-6 flex flex-col justify-between">
-          <div>
-            <span class="text-[10px] uppercase tracking-[0.3em] font-mono text-stone-500 block mb-3">Artist Note</span>
-            <p class="font-light text-stone-200 text-lg sm:text-xl leading-snug italic">
-              "{bioSnippet}"
-            </p>
-          </div>
-          <div class="mt-8 pt-4 border-t border-stone-800 flex justify-between items-center text-xs">
-            <span class="font-mono text-stone-500 text-[11px]">Midland, ON</span>
-            <a href="/about/" class="text-stone-300 hover:text-white font-mono uppercase tracking-widest text-[10px] underline underline-offset-4">
-              Full Statement &rarr;
-            </a>
-          </div>
-        </article>
+      <!-- Right Column: "Have you seen this one yet?" Video Card -->
+      <div class="lg:col-span-7 bg-stone-900/30 border border-stone-800/80 p-6 sm:p-8 flex flex-col justify-between">
+        {featuredVideo ? (
+          <>
+            <div class="flex items-center justify-between mb-4">
+              <div class="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] text-stone-400">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                <span>Have you seen this one yet?</span>
+              </div>
+              <a href="/video-projects/" class="text-[10px] font-mono uppercase tracking-widest text-stone-500 hover:text-stone-300">
+                All Projects ({allVideos.length}) &rarr;
+              </a>
+            </div>
 
-        <!-- Bunny Photos (Randomly Pulled) -->
+            <!-- Video Thumbnail Stage -->
+            <button
+              type="button"
+              class="aspect-video w-full bg-stone-950 border border-stone-800 overflow-hidden relative group block cursor-pointer text-left"
+              onclick="document.getElementById('spotlight-video-modal').showModal()"
+            >
+              <img 
+                src={featuredVideo.data.coverImage} 
+                alt={featuredVideo.data.title}
+                class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              />
+              <div class="absolute inset-0 bg-stone-950/40 group-hover:bg-stone-950/20 transition-colors flex items-center justify-center">
+                <div class="w-12 h-12 rounded-full bg-stone-950/80 backdrop-blur-md border border-stone-700 flex items-center justify-center group-hover:scale-110 group-hover:border-white transition-all">
+                  <span class="text-white text-xs pl-0.5">&#9658;</span>
+                </div>
+              </div>
+            </button>
+
+            <!-- Video Meta Footer -->
+            <div class="mt-4 pt-3 border-t border-stone-800/80 flex items-center justify-between">
+              <div>
+                <h2 class="text-base font-light text-white tracking-tight">{featuredVideo.data.title}</h2>
+                <span class="text-[10px] font-mono uppercase tracking-wider text-stone-500">
+                  {featuredVideo.data.category} &bull; {featuredVideo.data.year} {featuredVideo.data.client ? `• ${featuredVideo.data.client}` : ''}
+                </span>
+              </div>
+              <button 
+                type="button" 
+                class="text-[10px] uppercase font-mono tracking-widest border border-stone-700 px-3 py-1 text-stone-300 hover:text-white hover:border-stone-500 transition-colors"
+                onclick="document.getElementById('spotlight-video-modal').showModal()"
+              >
+                Watch Now
+              </button>
+            </div>
+          </>
+        ) : (
+          <div class="h-full flex items-center justify-center py-12 text-stone-500 font-mono text-xs">
+            No archive projects found. Add one in /admin/.
+          </div>
+        )}
+      </div>
+
+    </section>
+
+    <!-- LOWER STAGE: Tight Photographic Grid (Eliminates Awkward Vertical Columns) -->
+    <section class="space-y-6 pt-4">
+      <div class="flex items-baseline justify-between border-b border-stone-800/80 pb-3">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-[0.25em] text-stone-500 block">Atmospheric Stills</span>
+          <h2 class="text-xl font-light tracking-tight text-white">Recent Frames &amp; Studies</h2>
+        </div>
+        <div class="flex items-center gap-4">
+          <button 
+            type="button" 
+            onclick="window.location.reload()" 
+            class="text-[10px] font-mono uppercase tracking-widest text-stone-500 hover:text-stone-300 transition-colors"
+            title="Shuffle frames"
+          >
+            [Shuffle]
+          </button>
+          <a href="/galleries/" class="text-xs font-mono uppercase tracking-widest text-stone-400 hover:text-white transition-colors">
+            All Galleries &rarr;
+          </a>
+        </div>
+      </div>
+
+      <!-- Tight 3-Column Uniform Ratio Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {randomPhotos.map((img, idx) => {
           const modalId = `home-modal-${idx}`;
           return (
-            <article class="break-inside-avoid group flex flex-col bg-stone-900/40 border border-stone-800/70 p-2 overflow-hidden">
+            <article class="bg-stone-900/40 border border-stone-800/80 p-2 group flex flex-col justify-between">
               <button
                 type="button"
-                class="relative overflow-hidden cursor-zoom-in block w-full text-left"
+                class="aspect-4/3 w-full bg-stone-950 overflow-hidden relative cursor-zoom-in block text-left"
                 onclick={`document.getElementById('${modalId}').showModal()`}
               >
                 <img 
                   src={img.url} 
                   alt={img.name}
-                  class="w-full h-auto object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                  class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                   loading="lazy"
                 />
                 <div class="absolute inset-0 bg-stone-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <span class="text-[10px] uppercase tracking-widest bg-stone-950/80 text-white px-3 py-1.5 border border-stone-700">Enlarge</span>
+                  <span class="text-[10px] uppercase tracking-widest bg-stone-950/80 text-white px-2.5 py-1 border border-stone-700">Enlarge</span>
                 </div>
               </button>
-              
-              <div class="p-3 flex justify-between items-baseline">
-                <h3 class="text-xs font-mono text-stone-300 capitalize truncate pr-2">{img.name}</h3>
+
+              <div class="pt-2 px-1 flex justify-between items-baseline">
+                <span class="text-xs font-mono text-stone-300 capitalize truncate pr-2">{img.name}</span>
                 <a 
                   href={`/galleries/${img.collectionFolder}/`}
-                  class="text-[10px] font-mono uppercase text-stone-500 hover:text-stone-300 whitespace-nowrap transition-colors"
+                  class="text-[10px] font-mono uppercase tracking-wider text-stone-500 hover:text-stone-300 whitespace-nowrap"
                 >
                   {img.collectionTitle}
                 </a>
               </div>
 
-              <!-- Lightbox Modal -->
+              <!-- Dialog Lightbox -->
               <dialog 
                 id={modalId}
                 class="m-auto p-0 rounded-xs backdrop:bg-stone-950/85 bg-stone-900 text-stone-100 max-w-5xl w-[94vw] max-h-[92vh] overflow-y-auto shadow-2xl border border-stone-800"
@@ -163,7 +244,7 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
                   <div class="border-t border-stone-800 pt-3 flex justify-between items-center text-xs font-mono text-stone-400">
                     <span class="capitalize text-stone-200">{img.name}</span>
                     <a href={`/galleries/${img.collectionFolder}/`} class="text-[10px] uppercase tracking-widest text-stone-500 hover:text-white">
-                      From {img.collectionTitle} &rarr;
+                      Series: {img.collectionTitle} &rarr;
                     </a>
                   </div>
                 </div>
@@ -171,157 +252,65 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
             </article>
           );
         })}
-
-        <!-- Context Card 02: Quick Direct Inquiry Invite -->
-        <article class="break-inside-avoid bg-stone-900/30 border border-stone-800/60 p-6 flex flex-col justify-between">
-          <div>
-            <span class="text-[10px] uppercase tracking-[0.3em] font-mono text-stone-500 block mb-2">Commissions & Licensing</span>
-            <p class="text-sm font-light text-stone-300 leading-relaxed">
-              Available for selected editorial cinematography, location scouting stills, and bespoke fine art print inquiries.
-            </p>
-          </div>
-          <div class="mt-6">
-            <a href="/contact/" class="text-xs uppercase tracking-widest border border-stone-700 hover:border-white text-stone-300 hover:text-white px-4 py-2 inline-block transition-colors font-mono">
-              Direct Contact &rarr;
-            </a>
-          </div>
-        </article>
-
       </div>
     </section>
 
-    <!-- 2. The Feature Hook: "Have you seen this one yet?" Video Spotlight -->
-    {featuredVideo && (
-      <section class="border border-stone-800/90 bg-stone-900/30 p-6 sm:p-10 relative overflow-hidden">
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-          
-          <div class="md:col-span-5 space-y-4">
-            <div class="inline-flex items-center gap-2 px-2.5 py-1 bg-stone-950 border border-stone-800 text-[10px] font-mono uppercase tracking-[0.2em] text-stone-400">
-              <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-              Random Archive Reel
-            </div>
-            
-            <h2 class="text-2xl sm:text-3xl font-light text-white tracking-tight leading-tight">
-              Have you seen this one yet?
-            </h2>
-
-            <p class="text-xs font-mono uppercase tracking-widest text-stone-500">
-              {featuredVideo.data.category} &bull; {featuredVideo.data.year}
-              {featuredVideo.data.client ? ` &bull; ${featuredVideo.data.client}` : ''}
-            </p>
-
-            <h3 class="text-lg font-light text-stone-200">
-              "{featuredVideo.data.title}"
-            </h3>
-
-            <p class="text-xs text-stone-400 font-light leading-relaxed">
-              Role: {featuredVideo.data.role}
-            </p>
-
-            <div class="pt-2 flex items-center gap-4">
-              <button
-                type="button"
-                class="bg-stone-100 hover:bg-white text-stone-950 px-5 py-2.5 text-xs uppercase tracking-widest font-medium transition-colors cursor-pointer flex items-center gap-2"
-                onclick="document.getElementById('spotlight-video-modal').showModal()"
-              >
-                <span>&#9658;</span> Watch Feature
-              </button>
-              <a href="/video-projects/" class="text-xs uppercase tracking-widest text-stone-400 hover:text-white font-mono transition-colors">
-                All Motion Work &rarr;
-              </a>
-            </div>
-          </div>
-
-          <!-- Video Thumbnail Card -->
-          <div class="md:col-span-7">
-            <button
-              type="button"
-              class="aspect-video w-full bg-stone-950 border border-stone-800 overflow-hidden relative group block cursor-pointer"
-              onclick="document.getElementById('spotlight-video-modal').showModal()"
-            >
-              <img 
-                src={featuredVideo.data.coverImage} 
-                alt={featuredVideo.data.title}
-                class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-              />
-              <div class="absolute inset-0 bg-stone-950/40 group-hover:bg-stone-950/20 transition-colors flex items-center justify-center">
-                <div class="w-14 h-14 rounded-full bg-stone-950/80 backdrop-blur-md border border-stone-700 flex items-center justify-center group-hover:scale-110 group-hover:border-white transition-all">
-                  <span class="text-white text-sm pl-1">&#9658;</span>
-                </div>
-              </div>
-            </button>
-          </div>
-
-        </div>
-
-        <!-- Spotlight Video Dialog -->
-        <dialog 
-          id="spotlight-video-modal" 
-          class="m-auto p-0 rounded-xs backdrop:bg-stone-950/90 bg-stone-900 text-stone-100 max-w-5xl w-[94vw] max-h-[92vh] overflow-hidden shadow-2xl border border-stone-800"
-          data-video-dialog
-        >
-          <div class="relative bg-black flex flex-col">
-            <div class="flex items-center justify-between p-4 bg-stone-950 border-b border-stone-800">
-              <span class="text-xs uppercase tracking-widest text-stone-400 truncate pr-4">
-                {featuredVideo.data.title} ({featuredVideo.data.year})
-              </span>
-              <button 
-                type="button"
-                class="text-stone-400 hover:text-white text-2xl font-light leading-none cursor-pointer px-2"
-                onclick="document.getElementById('spotlight-video-modal').close()"
-                aria-label="Close"
-              >
-                &times;
-              </button>
-            </div>
-            <div class="aspect-video w-full bg-black flex items-center justify-center">
-              {videoEmbed?.type === 'iframe' && (
-                <iframe 
-                  src={videoEmbed.src} 
-                  title={featuredVideo.data.title}
-                  class="w-full h-full border-0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                  allowfullscreen
-                ></iframe>
-              )}
-              {videoEmbed?.type === 'video' && (
-                <video controls autoplay class="w-full h-full object-contain">
-                  <source src={videoEmbed.src} type="video/mp4" />
-                </video>
-              )}
-              {!videoEmbed && (
-                <p class="text-stone-500 text-xs font-mono">No video URL linked to this entry.</p>
-              )}
-            </div>
-          </div>
-        </dialog>
-      </section>
-    )}
-
   </main>
 
-  <!-- Dark-Room Status Bar / Footer -->
-  <footer class="border-t border-stone-900 bg-stone-950/60 py-6 px-6">
+  <!-- Video Modal Dialog -->
+  {featuredVideo && (
+    <dialog 
+      id="spotlight-video-modal" 
+      class="m-auto p-0 rounded-xs backdrop:bg-stone-950/90 bg-stone-900 text-stone-100 max-w-5xl w-[94vw] max-h-[92vh] overflow-hidden shadow-2xl border border-stone-800"
+      data-video-dialog
+    >
+      <div class="relative bg-black flex flex-col">
+        <div class="flex items-center justify-between p-4 bg-stone-950 border-b border-stone-800">
+          <span class="text-xs uppercase tracking-widest text-stone-400 truncate pr-4">
+            {featuredVideo.data.title} ({featuredVideo.data.year})
+          </span>
+          <button 
+            type="button"
+            class="text-stone-400 hover:text-white text-2xl font-light leading-none cursor-pointer px-2"
+            onclick="document.getElementById('spotlight-video-modal').close()"
+            aria-label="Close"
+          >
+            &times;
+          </button>
+        </div>
+        <div class="aspect-video w-full bg-black flex items-center justify-center">
+          {videoEmbed?.type === 'iframe' && (
+            <iframe 
+              src={videoEmbed.src} 
+              title={featuredVideo.data.title}
+              class="w-full h-full border-0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen
+            ></iframe>
+          )}
+          {videoEmbed?.type === 'video' && (
+            <video controls autoplay class="w-full h-full object-contain">
+              <source src={videoEmbed.src} type="video/mp4" />
+            </video>
+          )}
+          {!videoEmbed && (
+            <p class="text-stone-500 text-xs font-mono">No video URL linked to this entry.</p>
+          )}
+        </div>
+      </div>
+    </dialog>
+  )}
+
+  <!-- Clean Minimal Footer -->
+  <footer class="border-t border-stone-900 py-6 px-6 mt-12">
     <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] font-mono text-stone-500 uppercase tracking-widest">
-      <div>
-        <span>System: 44.75° N, 79.88° W &bull; Midland, Ontario</span>
-      </div>
-      <div class="flex items-center gap-4">
-        <span>Render: Static (Astro + Bunny CDN)</span>
-        <button 
-          type="button" 
-          onclick="window.location.reload()" 
-          class="text-stone-400 hover:text-white border border-stone-800 px-2 py-0.5 rounded-xs transition-colors cursor-pointer"
-          title="Re-randomize visual frames"
-        >
-          [Roll New Frames]
-        </button>
-      </div>
+      <span>&copy; 2026 {settings.siteTitle || "Nate Lacroix"}. All rights reserved.</span>
+      <span>Midland, Ontario &bull; Bunny Storage CDN</span>
     </div>
   </footer>
 
   <script>
-    // Lightbox click-outside handler
+    // Click-outside listener for dialogs
     document.querySelectorAll('dialog').forEach((dialog) => {
       dialog.addEventListener('click', (event) => {
         const rect = dialog.getBoundingClientRect();
@@ -337,7 +326,7 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
       });
     });
 
-    // Handle closing video cleanly
+    // Pause video playback on modal close
     const videoDialog = document.getElementById('spotlight-video-modal');
     videoDialog?.addEventListener('close', () => {
       const iframe = videoDialog.querySelector('iframe');
