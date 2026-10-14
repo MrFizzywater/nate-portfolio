@@ -4,18 +4,21 @@ import { getBunnyGalleries } from '../lib/bunny';
 import settings from '../content/settings/general.json';
 import '../styles/global.css';
 
-// 1. Fetch Bunny Galleries & Flatten
+// 1. Fetch Bunny Collections & Pick Exactly ONE Random Image per Gallery
 const collections = await getBunnyGalleries();
-const allBunnyImages = collections.flatMap(c => 
-  c.images.map(img => ({ ...img, collectionTitle: c.title, collectionFolder: c.folder }))
-);
 
-function getRandomItems<T>(arr: T[], count: number): T[] {
-  const shuffled = [...arr].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
-}
-
-const randomPhotos = getRandomItems(allBunnyImages, 6);
+const singleRandomFromEachGallery = collections
+  .map((col) => {
+    if (!col.images || col.images.length === 0) return null;
+    const randomImg = col.images[Math.floor(Math.random() * col.images.length)];
+    return {
+      ...randomImg,
+      collectionTitle: col.title,
+      collectionFolder: col.folder,
+    };
+  })
+  .filter((item): item is NonNullable<typeof item> => item !== null)
+  .sort(() => 0.5 - Math.random()); // Shuffle gallery order
 
 // 2. Fetch About Entry
 const aboutEntry = await getEntry('pages', 'about');
@@ -34,7 +37,6 @@ function getEmbedUrl(url: string = '') {
     return { type: 'iframe', src: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0` };
   }
   if (url.includes('iframe.mediadelivery.net')) {
-    // Clean out any existing autoplay params so Bunny does not autoplay on load
     const cleanUrl = url.replace(/([?&])autoplay=(true|1|false|0)(&|$)/, '$1').replace(/[?&]$/, '');
     const separator = cleanUrl.includes('?') ? '&' : '?';
     return { type: 'iframe', src: `${cleanUrl}${separator}autoplay=true` };
@@ -172,21 +174,21 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
 
     </section>
 
-    <!-- LOWER STAGE: Photographic Grid -->
+    <!-- LOWER STAGE: Natural Masonry Gallery Sampling (1 Image Per Bunny Gallery) -->
     <section class="space-y-6 pt-4">
       <div class="flex items-baseline justify-between border-b border-stone-800/80 pb-3">
         <div>
-          <span class="text-[10px] font-mono uppercase tracking-[0.25em] text-stone-500 block">Atmospheric Stills</span>
-          <h2 class="text-xl font-light tracking-tight text-white">Recent Frames &amp; Studies</h2>
+          <span class="text-[10px] font-mono uppercase tracking-[0.25em] text-stone-500 block">Cross-Gallery Sampler</span>
+          <h2 class="text-xl font-light tracking-tight text-white">Atmospheric Frames</h2>
         </div>
         <div class="flex items-center gap-4">
           <button 
             type="button" 
             onclick="window.location.reload()" 
-            class="text-[10px] font-mono uppercase tracking-widest text-stone-500 hover:text-stone-300 transition-colors"
-            title="Shuffle frames"
+            class="text-[10px] font-mono uppercase tracking-widest text-stone-500 hover:text-stone-300 transition-colors cursor-pointer"
+            title="Pick a new frame from each gallery"
           >
-            [Shuffle]
+            [Re-Sample]
           </button>
           <a href="/galleries/" class="text-xs font-mono uppercase tracking-widest text-stone-400 hover:text-white transition-colors">
             All Galleries &rarr;
@@ -194,70 +196,78 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {randomPhotos.map((img, idx) => {
-          const modalId = `home-modal-${idx}`;
-          return (
-            <article class="bg-stone-900/40 border border-stone-800/80 p-2 group flex flex-col justify-between">
-              <button
-                type="button"
-                class="aspect-4/3 w-full bg-stone-950 overflow-hidden relative cursor-zoom-in block text-left"
-                onclick={`document.getElementById('${modalId}').showModal()`}
-              >
-                <img 
-                  src={img.url} 
-                  alt={img.name}
-                  class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                  loading="lazy"
-                />
-                <div class="absolute inset-0 bg-stone-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <span class="text-[10px] uppercase tracking-widest bg-stone-950/80 text-white px-2.5 py-1 border border-stone-700">Enlarge</span>
-                </div>
-              </button>
-
-              <div class="pt-2 px-1 flex justify-between items-baseline">
-                <span class="text-xs font-mono text-stone-300 capitalize truncate pr-2">{img.name}</span>
-                <a 
-                  href={`/galleries/${img.collectionFolder}/`}
-                  class="text-[10px] font-mono uppercase tracking-wider text-stone-500 hover:text-stone-300 whitespace-nowrap"
+      <!-- Natural Proportions Masonry -->
+      {singleRandomFromEachGallery.length === 0 ? (
+        <div class="py-16 text-center text-stone-600 font-mono text-xs">
+          No gallery images available to sample. Upload folders to Bunny Storage under /galleries/.
+        </div>
+      ) : (
+        <div class="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
+          {singleRandomFromEachGallery.map((img, idx) => {
+            const modalId = `home-masonry-modal-${idx}`;
+            return (
+              <article class="break-inside-avoid bg-stone-900/40 border border-stone-800/80 p-2 group flex flex-col overflow-hidden">
+                <button
+                  type="button"
+                  class="w-full bg-stone-950 overflow-hidden relative cursor-zoom-in block text-left"
+                  onclick={`document.getElementById('${modalId}').showModal()`}
                 >
-                  {img.collectionTitle}
-                </a>
-              </div>
+                  <img 
+                    src={img.url} 
+                    alt={img.name}
+                    class="w-full h-auto object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                    loading="lazy"
+                  />
+                  <div class="absolute inset-0 bg-stone-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span class="text-[10px] uppercase tracking-widest bg-stone-950/80 text-white px-2.5 py-1 border border-stone-700">Enlarge</span>
+                  </div>
+                </button>
 
-              <!-- Dialog Lightbox -->
-              <dialog 
-                id={modalId}
-                class="m-auto p-0 rounded-xs backdrop:bg-stone-950/85 bg-stone-900 text-stone-100 max-w-5xl w-[94vw] max-h-[92vh] overflow-y-auto shadow-2xl border border-stone-800"
-              >
-                <div class="p-6 sm:p-8 relative">
-                  <button 
-                    type="button"
-                    class="absolute top-4 right-4 text-stone-400 hover:text-white text-3xl font-light cursor-pointer leading-none p-2 z-10"
-                    onclick={`document.getElementById('${modalId}').close()`}
+                <div class="pt-2.5 px-1 flex justify-between items-baseline">
+                  <span class="text-xs font-mono text-stone-300 capitalize truncate pr-2">{img.name}</span>
+                  <a 
+                    href={`/galleries/${img.collectionFolder}/`}
+                    class="text-[10px] font-mono uppercase tracking-wider text-stone-500 hover:text-stone-300 whitespace-nowrap transition-colors"
                   >
-                    &times;
-                  </button>
-                  <div class="bg-black/50 flex items-center justify-center max-h-[75vh] overflow-hidden mb-4">
-                    <img src={img.url} alt={img.name} class="max-h-[75vh] w-auto mx-auto object-contain" />
-                  </div>
-                  <div class="border-t border-stone-800 pt-3 flex justify-between items-center text-xs font-mono text-stone-400">
-                    <span class="capitalize text-stone-200">{img.name}</span>
-                    <a href={`/galleries/${img.collectionFolder}/`} class="text-[10px] uppercase tracking-widest text-stone-500 hover:text-white">
-                      Series: {img.collectionTitle} &rarr;
-                    </a>
-                  </div>
+                    {img.collectionTitle} &rarr;
+                  </a>
                 </div>
-              </dialog>
-            </article>
-          );
-        })}
-      </div>
+
+                <!-- Lightbox Modal -->
+                <dialog 
+                  id={modalId}
+                  class="m-auto p-0 rounded-xs backdrop:bg-stone-950/85 bg-stone-900 text-stone-100 max-w-5xl w-[94vw] max-h-[92vh] overflow-y-auto shadow-2xl border border-stone-800"
+                >
+                  <div class="p-6 sm:p-8 relative">
+                    <button 
+                      type="button"
+                      class="absolute top-4 right-4 text-stone-400 hover:text-white text-3xl font-light cursor-pointer leading-none p-2 z-10"
+                      onclick={`document.getElementById('${modalId}').close()`}
+                      aria-label="Close"
+                    >
+                      &times;
+                    </button>
+                    <div class="bg-black/50 flex items-center justify-center max-h-[75vh] overflow-hidden mb-4">
+                      <img src={img.url} alt={img.name} class="max-h-[75vh] w-auto mx-auto object-contain" />
+                    </div>
+                    <div class="border-t border-stone-800 pt-3 flex justify-between items-center text-xs font-mono text-stone-400">
+                      <span class="capitalize text-stone-200">{img.name}</span>
+                      <a href={`/galleries/${img.collectionFolder}/`} class="text-[10px] uppercase tracking-widest text-stone-500 hover:text-white">
+                        Collection: {img.collectionTitle} &rarr;
+                      </a>
+                    </div>
+                  </div>
+                </dialog>
+              </article>
+            );
+          })}
+        </div>
+      )}
     </section>
 
   </main>
 
-  <!-- Video Modal Dialog (Uses data-src so it only loads on explicit user click) -->
+  <!-- Video Modal Dialog -->
   {featuredVideo && (
     <dialog 
       id="spotlight-video-modal" 
@@ -308,7 +318,7 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
   </footer>
 
   <script>
-    // Click-outside listener for dialogs
+    // Dialog outside click handlers
     document.querySelectorAll('dialog').forEach((dialog) => {
       dialog.addEventListener('click', (event) => {
         const rect = dialog.getBoundingClientRect();
@@ -329,7 +339,7 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
     const video = videoDialog?.querySelector('video');
     const videoSource = video?.querySelector('source');
 
-    // Open video on demand (only load src when user clicks)
+    // On-demand spotlight video loader
     document.querySelectorAll('[data-open-spotlight]').forEach((btn) => {
       btn.addEventListener('click', () => {
         if (!videoDialog) return;
@@ -348,10 +358,10 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
       });
     });
 
-    // Cleanly stop and unload video on modal close
+    // Unload video cleanly on modal dismiss
     videoDialog?.addEventListener('close', () => {
       if (iframe) {
-        iframe.removeAttribute('src'); // Unloads the iframe completely so Bunny stops playing
+        iframe.removeAttribute('src');
       }
       if (video) {
         video.pause();
