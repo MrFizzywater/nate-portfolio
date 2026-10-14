@@ -1,6 +1,7 @@
 ---
-title: "About Nate Lacroix"
-headline: "Media artist, filmmaker, and photographer based in Midland, Ontario."
+title: About Nate Lacroix
+headline: Media artist, filmmaker, and photographer based in Midland, Ontario.
+portrait: /uploads/20181221-dsc00193_1.jpg
 ---
 
 Working across cinematography, documentary framing, and physical print photography. 
