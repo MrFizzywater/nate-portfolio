@@ -1,10 +1,10 @@
 ---
-title: "Documentary Reel"
-category: "Documentary"
-year: 2026
-coverImage: "/uploads/placeholder.jpg"
-videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-role: "Director / Cinematographer / Editor"
-client: "Selected Projects"
+title: Spoons
+category: Narrative / Short
+year: 2018
+coverImage: /uploads/spoons.jpg
+videoUrl: https://www.youtube.com/watch?v=z4FzvxUS5FQ
+role: Writer / Director / Cinematographer / Editor
+client: Good Morning Apocalypse
 ---
-Overview of documentary camera work, framing, and pacing.
+The short film we made for the 48FILM Project that brought us all the way to HOLLYWOOD to see it screened at the Director's Guild of America.
