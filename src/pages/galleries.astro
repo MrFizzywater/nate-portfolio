@@ -11,12 +11,12 @@ const collections = await getBunnyGalleries();
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Collections — {settings.siteTitle || "Nate Lacroix"}</title>
+  <title>Galleries — {settings.siteTitle || "Nate Lacroix"}</title>
 </head>
 <body class="min-h-screen flex flex-col justify-between font-sans">
 
   <header class="border-b border-stone-800/80 sticky top-0 bg-stone-950/90 backdrop-blur-md z-30">
-    <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
+    <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
       <div>
         <a href="/" class="text-xl font-light tracking-tight text-white block">
           {settings.siteTitle || "Nate Lacroix"}
@@ -25,9 +25,10 @@ const collections = await getBunnyGalleries();
           Bunny Storage Archive
         </span>
       </div>
-      <nav class="flex items-center gap-6 text-xs uppercase tracking-widest font-medium">
-        <a href="/" class="text-stone-400 hover:text-white transition-colors">Curated</a>
-        <a href="/collections/" class="text-white border-b border-white pb-0.5">Collections</a>
+      <nav class="flex items-center gap-5 sm:gap-6 text-xs uppercase tracking-widest font-medium">
+        <a href="/" class="text-stone-400 hover:text-white transition-colors">Work</a>
+        <a href="/galleries/" class="text-white border-b border-white pb-0.5">Galleries</a>
+        <a href="/video-projects/" class="text-stone-400 hover:text-white transition-colors">Video Projects</a>
         <a href="/about/" class="text-stone-400 hover:text-white transition-colors">About</a>
         <a href="/contact/" class="text-stone-400 hover:text-white transition-colors">Contact</a>
       </nav>
@@ -37,8 +38,8 @@ const collections = await getBunnyGalleries();
   <main class="max-w-6xl mx-auto px-6 py-12 flex-grow w-full">
     {collections.length === 0 ? (
       <div class="py-24 text-center">
-        <p class="text-stone-500 text-sm font-mono">[BUNNY STORAGE] No folders found in nate-photo-zone yet.</p>
-        <p class="text-stone-600 text-xs mt-2">Upload a folder of images to Bunny Storage and redeploy to populate.</p>
+        <p class="text-stone-500 text-sm font-mono">[BUNNY STORAGE] No gallery folders detected in /galleries/ yet.</p>
+        <p class="text-stone-600 text-xs mt-2">Upload a subfolder of images into 'galleries' on Bunny Storage and redeploy.</p>
       </div>
     ) : (
       <div class="space-y-16">
@@ -49,7 +50,6 @@ const collections = await getBunnyGalleries();
               <span class="text-xs font-mono text-stone-500">{col.images.length} frames</span>
             </div>
 
-            <!-- Auto Masonry Grid -->
             <div class="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
               {col.images.map((img) => (
                 <div class="break-inside-avoid bg-stone-900/40 border border-stone-800/70 p-2 overflow-hidden group">
