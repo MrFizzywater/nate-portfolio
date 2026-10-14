@@ -1,0 +1,83 @@
+---
+import { getBunnyGalleries } from '../lib/bunny';
+import settings from '../content/settings/general.json';
+import '../styles/global.css';
+
+const collections = await getBunnyGalleries();
+---
+
+<!DOCTYPE html>
+<html lang="en" class="bg-stone-950 text-stone-100 antialiased selection:bg-stone-800">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Collections — {settings.siteTitle || "Nate Lacroix"}</title>
+</head>
+<body class="min-h-screen flex flex-col justify-between font-sans">
+
+  <header class="border-b border-stone-800/80 sticky top-0 bg-stone-950/90 backdrop-blur-md z-30">
+    <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
+      <div>
+        <a href="/" class="text-xl font-light tracking-tight text-white block">
+          {settings.siteTitle || "Nate Lacroix"}
+        </a>
+        <span class="text-[10px] uppercase tracking-[0.25em] text-stone-500">
+          Bunny Storage Archive
+        </span>
+      </div>
+      <nav class="flex items-center gap-6 text-xs uppercase tracking-widest font-medium">
+        <a href="/" class="text-stone-400 hover:text-white transition-colors">Curated</a>
+        <a href="/collections/" class="text-white border-b border-white pb-0.5">Collections</a>
+        <a href="/about/" class="text-stone-400 hover:text-white transition-colors">About</a>
+        <a href="/contact/" class="text-stone-400 hover:text-white transition-colors">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 py-12 flex-grow w-full">
+    {collections.length === 0 ? (
+      <div class="py-24 text-center">
+        <p class="text-stone-500 text-sm font-mono">[BUNNY STORAGE] No folders found in nate-photo-zone yet.</p>
+        <p class="text-stone-600 text-xs mt-2">Upload a folder of images to Bunny Storage and redeploy to populate.</p>
+      </div>
+    ) : (
+      <div class="space-y-16">
+        {collections.map((col) => (
+          <section>
+            <div class="border-b border-stone-800/80 pb-3 mb-8 flex justify-between items-baseline">
+              <h2 class="text-2xl font-light text-white tracking-tight">{col.title}</h2>
+              <span class="text-xs font-mono text-stone-500">{col.images.length} frames</span>
+            </div>
+
+            <!-- Auto Masonry Grid -->
+            <div class="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
+              {col.images.map((img) => (
+                <div class="break-inside-avoid bg-stone-900/40 border border-stone-800/70 p-2 overflow-hidden group">
+                  <a 
+                    href={img.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="block overflow-hidden relative cursor-zoom-in"
+                  >
+                    <img 
+                      src={img.url} 
+                      alt={img.name} 
+                      class="w-full h-auto object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                      loading="lazy" 
+                    />
+                  </a>
+                  <p class="text-[11px] font-mono text-stone-400 mt-2 px-1 capitalize">{img.name}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    )}
+  </main>
+
+  <footer class="border-t border-stone-900 py-8 text-center text-[10px] uppercase tracking-widest text-stone-600">
+    &copy; 2026 {settings.siteTitle || "Nate Lacroix"}.
+  </footer>
+</body>
+</html>
