@@ -20,9 +20,9 @@ export interface PhotoCollection {
   }[];
 }
 
-const STORAGE_ZONE = process.env.BUNNY_STORAGE_ZONE || 'nate-photo-zone';
+const STORAGE_ZONE = process.env.BUNNY_STORAGE_ZONE || 'nate-lacroix-photos';
 const API_KEY = process.env.BUNNY_API_KEY || '';
-const ENDPOINT = process.env.BUNNY_STORAGE_ENDPOINT || 'storage.bunnycdn.com';
+const ENDPOINT = process.env.BUNNY_STORAGE_ENDPOINT || 'ny.storage.bunnycdn.com';
 const CDN_URL = (process.env.PUBLIC_BUNNY_CDN_URL || 'https://media.natelacroix.com').replace(/\/$/, '');
 
 function formatTitle(name: string) {
@@ -33,37 +33,39 @@ function formatTitle(name: string) {
 
 export async function getBunnyGalleries(): Promise<PhotoCollection[]> {
   if (!API_KEY) {
-    console.warn('[Bunny API] Missing BUNNY_API_KEY environment variable.');
+    console.warn('[Bunny API] Missing BUNNY_API_KEY environment variable. Skipping galleries.');
     return [];
   }
 
   try {
-    // 1. Fetch strictly from the /galleries/ folder in nate-photo-zone
-    const rootRes = await fetch(`https://${ENDPOINT}/${STORAGE_ZONE}/galleries/`, {
+    const rootUrl = `https://${ENDPOINT}/${STORAGE_ZONE}/galleries/`;
+    const res = await fetch(rootUrl, {
       headers: { AccessKey: API_KEY, Accept: 'application/json' },
     });
 
-    if (!rootRes.ok) {
-      console.warn(`[Bunny API] Status ${rootRes.status} querying /galleries/. Ensure the 'galleries' folder exists in Bunny Storage.`);
+    if (!res.ok) {
+      console.warn(`[Bunny API] Querying ${rootUrl} returned status ${res.status}: ${res.statusText}`);
       return [];
     }
 
-    const items: BunnyFile[] = await rootRes.json();
+    const items: BunnyFile[] = await res.json();
     const directories = items.filter((item) => item.IsDirectory);
-    const collections: PhotoCollection[] = [];
+    console.log(`[Bunny API] Found ${directories.length} folder(s) in /galleries/:`, directories.map((d) => d.ObjectName));
 
-    // 2. Fetch images inside each subfolder (e.g. /galleries/landscapes/)
+    const collections: PhotoCollection[] = [];
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.avif'];
+
     for (const dir of directories) {
       const folderName = dir.ObjectName;
-      const folderRes = await fetch(`https://${ENDPOINT}/${STORAGE_ZONE}/galleries/${folderName}/`, {
+      const folderUrl = `https://${ENDPOINT}/${STORAGE_ZONE}/galleries/${folderName}/`;
+
+      const folderRes = await fetch(folderUrl, {
         headers: { AccessKey: API_KEY, Accept: 'application/json' },
       });
 
       if (!folderRes.ok) continue;
 
       const files: BunnyFile[] = await folderRes.json();
-      const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.avif'];
-
       const images = files
         .filter((f) => !f.IsDirectory && imageExtensions.some((ext) => f.ObjectName.toLowerCase().endsWith(ext)))
         .map((f) => ({
@@ -81,8 +83,8 @@ export async function getBunnyGalleries(): Promise<PhotoCollection[]> {
     }
 
     return collections;
-  } catch (error) {
-    console.error('[Bunny API] Failed to fetch galleries:', error);
+  } catch (err: any) {
+    console.error('[Bunny API] Failed to fetch galleries:', err?.message);
     return [];
   }
 }
