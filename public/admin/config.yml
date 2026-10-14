@@ -21,9 +21,9 @@ collections:
       - { label: "Category / Series", name: "category", widget: "string", default: "Landscape" }
       - { label: "Caption / Story", name: "body", widget: "markdown", required: false }
 
-  # 2. Moving Image (Video Archive)
+  # 2. Video Projects (Powers /video-projects/)
   - name: "archive"
-    label: "Moving Image (Archive)"
+    label: "Video Projects"
     folder: "src/content/archive"
     create: true
     slug: "{{year}}-{{slug}}"
@@ -31,11 +31,11 @@ collections:
       - { label: "Project Title", name: "title", widget: "string" }
       - { label: "Category", name: "category", widget: "select", options: ["Music Video", "Documentary", "Narrative / Short", "Commercial / Brand"], default: "Music Video" }
       - { label: "Year", name: "year", widget: "number", value_type: "int", default: 2026 }
-      - { label: "Cover Still", name: "coverImage", widget: "image" }
-      - { label: "Video URL / Embed", name: "videoUrl", widget: "string", required: false }
+      - { label: "Cover Still / Thumbnail", name: "coverImage", widget: "image" }
+      - { label: "Video URL / Embed", name: "videoUrl", widget: "string", hint: "YouTube, Bunny Stream iframe, Vimeo, or direct .mp4 link", required: false }
       - { label: "Role", name: "role", widget: "string", default: "Director / Editor" }
       - { label: "Client / Band / Partner", name: "client", widget: "string", required: false }
-      - { label: "Notes / Story", name: "body", widget: "markdown", required: false }
+      - { label: "Project Story / Notes", name: "body", widget: "markdown", required: false }
 
   # 3. Site Pages (About & Contact)
   - name: "pages"
@@ -60,7 +60,7 @@ collections:
           - { label: "Location", name: "location", widget: "string", default: "Midland, ON, Canada" }
           - { label: "Instagram Link", name: "instagram", widget: "string", required: false }
 
-  # 4. Global Settings
+  # 4. Global Settings (Header, Title, Logo)
   - name: "settings"
     label: "Site Settings"
     delete: false

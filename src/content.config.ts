@@ -11,6 +11,19 @@ const photos = defineCollection({
   }),
 });
 
+const archive = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: 'src/content/archive' }),
+  schema: z.object({
+    title: z.string(),
+    category: z.string().default('Music Video'),
+    year: z.number().default(2026),
+    coverImage: z.string().default('/uploads/placeholder.jpg'),
+    videoUrl: z.string().optional(),
+    role: z.string().default('Director / Editor'),
+    client: z.string().optional(),
+  }),
+});
+
 const pages = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: 'src/content/pages' }),
   schema: z.object({
@@ -21,8 +34,7 @@ const pages = defineCollection({
     email: z.string().optional(),
     location: z.string().optional(),
     instagram: z.string().optional(),
-    projectLink: z.string().optional(),
   }),
 });
 
-export const collections = { photos, pages };
+export const collections = { photos, archive, pages };
