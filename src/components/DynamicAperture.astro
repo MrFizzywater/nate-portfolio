@@ -76,7 +76,7 @@ const photosJson = JSON.stringify(sanitizedPhotos);
     </div>
   </div>
 
-  <!-- Main Viewport & Curatorial Praise Chassis -->
+  <!-- Main Viewport & Stand-Up Intermission Chassis -->
   <div class="metallic-panel tech-corner border border-zinc-700/80 p-3 sm:p-5 relative overflow-hidden group">
     <!-- Angular Metallic Edge Sheen Line with Purple and Neon Green -->
     <div class="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/50 to-[#00ff88]/50 via-transparent pointer-events-none"></div>
@@ -84,7 +84,7 @@ const photosJson = JSON.stringify(sanitizedPhotos);
     <!-- Cycle Progress Line (animates with Purple-to-Neon Green gradient when auto-cycle active) -->
     <div id="cycle-progress-bar" class="absolute top-0 left-0 h-[2px] bg-gradient-to-r from-purple-500 to-[#00ff88] w-0 transition-all duration-300 pointer-events-none"></div>
 
-    <!-- 2-Column Split: Viewport on Left, Fictional Critical Praise on Right -->
+    <!-- 2-Column Split: Viewport on Left, Stand-Up Comedy Intermission on Right -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
       
       <!-- Left Column: Primary Frame Viewport Stage (8 cols) -->
@@ -149,8 +149,8 @@ const photosJson = JSON.stringify(sanitizedPhotos);
         </div>
       </div>
 
-      <!-- Right Column: Fictional Critical Praise Panel (5 cols) -->
-      <div class="lg:col-span-5 xl:col-span-4 flex flex-col justify-between bg-[#0c0e14] border border-zinc-700/80 p-5 sm:p-6 relative overflow-hidden group/praise">
+      <!-- Right Column: Stand-Up Comedy Intermission Panel (5 cols) -->
+      <div class="lg:col-span-5 xl:col-span-4 flex flex-col justify-between bg-[#0c0e14] border border-zinc-700/80 p-5 sm:p-6 relative overflow-hidden group/jokes">
         <!-- Top Edge Metallic Sheen Line with Purple and Green -->
         <div class="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/60 to-[#00ff88]/60 via-transparent"></div>
 
@@ -160,21 +160,21 @@ const photosJson = JSON.stringify(sanitizedPhotos);
         <div class="absolute bottom-2 left-2 text-[10px] font-mono text-[#c084fc]/60 leading-none pointer-events-none">+</div>
         <div class="absolute bottom-2 right-2 text-[10px] font-mono text-[#00ff88]/60 leading-none pointer-events-none">+</div>
 
-        <!-- Header of Praise Box -->
+        <!-- Header of Joke Box -->
         <div>
           <div class="flex items-center justify-between border-b border-zinc-800/80 pb-3 mb-3">
             <div class="flex items-center gap-2">
               <span class="w-2 h-2 bg-purple-500 transform rotate-45 inline-block"></span>
-              <span class="text-[10px] font-mono uppercase tracking-[0.22em] text-purple-300">Curatorial Praise</span>
+              <span class="text-[10px] font-mono uppercase tracking-[0.22em] text-purple-300">Stand-Up Intermission</span>
             </div>
             <button
               type="button"
-              id="btn-shuffle-praise"
+              id="btn-shuffle-joke"
               class="text-[10px] font-mono text-zinc-400 hover:text-[#00ff88] transition-colors uppercase tracking-wider cursor-pointer flex items-center gap-1 px-2.5 py-1 bg-zinc-900 border border-zinc-800 hover:border-[#00ff88]"
-              title="Generate alternative fictional review"
-              data-flavor="CURATORIAL DISPATCH // Generate alternative scholarly critique from international art panel"
+              title="Shuffle comedy bit"
+              data-flavor="STAND-UP BREAK // Shuffle real jokes from Pete Holmes, Stavros, Bill Burr, Michael Che & more"
             >
-              <span>Alt Review</span>
+              <span>Next Joke</span>
               <span class="text-[#00ff88]">↻</span>
             </button>
           </div>
@@ -183,29 +183,29 @@ const photosJson = JSON.stringify(sanitizedPhotos);
           <div class="relative py-2 min-h-[140px] flex flex-col justify-center">
             <span class="text-3xl font-serif text-purple-500/40 leading-none select-none -mb-3 block font-bold">“</span>
             <blockquote 
-              id="praise-quote" 
+              id="joke-quote" 
               class="text-sm sm:text-base font-light text-zinc-200 leading-relaxed italic transition-opacity duration-300"
             >
-              Loading review...
+              Loading joke...
             </blockquote>
           </div>
         </div>
 
-        <!-- Critic Attribution -->
+        <!-- Comedian Attribution -->
         <div class="border-t border-zinc-800/80 pt-4 mt-4 space-y-1">
           <div class="flex items-baseline justify-between gap-2">
-            <h4 id="praise-author" class="text-xs font-mono font-medium text-white tracking-wide uppercase">
-              Critic Name
+            <h4 id="joke-author" class="text-xs font-mono font-medium text-white tracking-wide uppercase">
+              Comedian Name
             </h4>
             <span class="text-[9px] font-mono text-[#00ff88] uppercase tracking-widest shrink-0 font-semibold">
-              Verified Critique
+              Stand-Up Bit
             </span>
           </div>
-          <p id="praise-title" class="text-[11px] text-zinc-400 font-light leading-snug">
-            Senior Adjunct of Atmospheric Dramaturgy
+          <p id="joke-title" class="text-[11px] text-zinc-400 font-light leading-snug">
+            Special Title
           </p>
-          <p id="praise-outlet" class="text-[10px] font-mono text-purple-300/80 uppercase tracking-wider">
-            The Brussels Monocle
+          <p id="joke-outlet" class="text-[10px] font-mono text-purple-300/80 uppercase tracking-wider">
+            Live Comedy Special
           </p>
         </div>
       </div>
@@ -273,143 +273,290 @@ const photosJson = JSON.stringify(sanitizedPhotos);
     description?: string;
   }
 
-  interface PraiseItem {
+  interface JokeItem {
     quote: string;
     author: string;
     title: string;
     outlet: string;
-    category?: string;
   }
 
-  const praises: PraiseItem[] = [
+  const jokes: JokeItem[] = [
+    // Pete Holmes
     {
-      quote: "A devastatingly polite meditation on damp geometry. One senses the photographer was freezing, yet stubbornly refused to go indoors for tea.",
-      author: "Dr. Alistair Pym-Smythe",
-      title: "Senior Fellow of Atmospheric Melancholia",
-      outlet: "The Burlington Quarterly of Severe Shadows"
+      quote: "I don't think anyone is really an atheist. I think people are just mad at church. Because God didn't make waking up early on Sunday in stiff pants a requirement—some guy named Gary did.",
+      author: "Pete Holmes",
+      title: "Faces and Sounds",
+      outlet: "HBO Comedy Special"
     },
     {
-      quote: "Notice how the horizon line quietly accuses the viewer of shallow life choices. It is both spiritually crushing and ideal for a dentist's waiting room.",
-      author: "Madame Geneviève Devereaux-Lemaire",
-      title: "Chief Juror of Nordic Nihilism",
-      outlet: "Cahiers du Crépuscule"
+      quote: "Sleep is so good that even without anything wrong in your life, waking up is still the worst thing that happens to you every day.",
+      author: "Pete Holmes",
+      title: "Nice Try, The Devil",
+      outlet: "Comedy Central Special"
     },
     {
-      quote: "The depth of field here is practically aggressive. It does not merely document the marsh; it interrogates the marsh regarding its whereabouts in November 2015.",
-      author: "Ignatius Quail, O.B.E.",
-      title: "Chairperson of Inconvenient Perspectives",
-      outlet: "Antwerp School of Heavy Mist",
-      category: "Landscape"
+      quote: "You never appreciate your youth until you're trying to figure out which sleeping position doesn't cause a pinched nerve in your shoulder.",
+      author: "Pete Holmes",
+      title: "I Am Not For Everyone",
+      outlet: "Netflix Comedy Special"
     },
     {
-      quote: "An audacious triumph of ontological stillness. Even the canine subject in the golden hour appears deeply burdened by late-stage capitalism.",
-      author: "Seraphina Cross-Davenport",
-      title: "Distinguished Lecturer in Suburban Postmodernism",
-      outlet: "Toronto Aesthetic Tribunal",
-      category: "Animals"
+      quote: "I love buying books because buying books feels like buying the time to read them.",
+      author: "Pete Holmes",
+      title: "Dirty Clean",
+      outlet: "Stand-Up Comedy"
+    },
+
+    // Stavros Halkias
+    {
+      quote: "My doctor told me I need to lose weight. I told him my body is a temple. It's just a temple from an ancient civilization that fell due to extreme decadence.",
+      author: "Stavros Halkias",
+      title: "Live at the Vulcan Gas Company",
+      outlet: "Austin Comedy Special"
     },
     {
-      quote: "The curvature of stainless steel here evokes seventeenth-century chiaroscuro and an overwhelming desire to wash the dishes immediately.",
-      author: "Bartholomew Van Der Graaf",
-      title: "Curator of Inanimate Despair",
-      outlet: "Zurich Contemporary Monograph Review",
-      category: "Still Life"
+      quote: "People say money can't buy happiness. Have you ever seen someone frowning on a jet ski? Or eating a warm basket of fresh garlic bread alone in a booth?",
+      author: "Stavros Halkias",
+      title: "Fat Rascal",
+      outlet: "Netflix Comedy Special"
     },
     {
-      quote: "Exquisite tonal restraint. A lesser lensman would have introduced joy or pastel warmth, but here we are rewarded with pristine, uncompromising Canadian stoicism.",
-      author: "Julian Vance-Thorne",
-      title: "Senior Essayist for 'Why Is It So Cold Out Here?'",
-      outlet: "The Boreal Monocle"
+      quote: "Nobody ever ordered mozzarella sticks because they were having a measured, disciplined evening.",
+      author: "Stavros Halkias",
+      title: "Fat Rascal",
+      outlet: "Netflix Comedy Special"
     },
     {
-      quote: "The subtle tension between Georgian Bay dampness and existential dread is so sharp it made me apologize to my baseboard heater.",
-      author: "Lady Cordelia Winter-Blythe",
-      title: "Honorary President of the Midland Guild of Grim Weather",
-      outlet: "Georgian Bay Art Dispatch",
-      category: "Atmosphere"
+      quote: "I'm in great shape for a guy living in the fourteenth century about to succumb to dropsy.",
+      author: "Stavros Halkias",
+      title: "Live at the Comedy Cellar",
+      outlet: "New York Stand-Up"
+    },
+
+    // Bill Burr
+    {
+      quote: "There is no greater feeling in the world than realizing you don't have to go to that thing you agreed to go to three weeks ago.",
+      author: "Bill Burr",
+      title: "Paper Tiger",
+      outlet: "Netflix Comedy Special"
     },
     {
-      quote: "The framing possesses the emotional gravity of a diesel semi-trailer idling in an empty gravel lot on a drizzly Sunday afternoon.",
-      author: "Archibald Sterling-Greene",
-      title: "Consultant to the Ministry of Dramatic Industrial Rust",
-      outlet: "Edinburgh Cine-Texture Gazette",
-      category: "Atmosphere"
+      quote: "Realizing you're an adult is mostly just standing in hardware stores looking at shelf brackets and thinking, 'Well, that's surprisingly reasonable.'",
+      author: "Bill Burr",
+      title: "Live at Red Rocks",
+      outlet: "Stand-Up Special"
     },
     {
-      quote: "A tour de force of unhurried dread. You can practically taste the lukewarm black coffee in the Stanley thermos just off-frame.",
-      author: "Professor Thaddeus Moss",
-      title: "Chair of Decentered Terrestrial Phenomenology",
-      outlet: "The Gilded Shutter Review"
+      quote: "You know you're getting older when you fall down, and people don't laugh—they gasp and look concerned.",
+      author: "Bill Burr",
+      title: "Walk Your Way Out",
+      outlet: "Netflix Special"
     },
     {
-      quote: "Few living artists have captured the metaphysical ache of chain-link fencing with such terrifying, razor-sharp sincerity.",
-      author: "Persephone Blight-Holloway",
-      title: "Senior Fellow in Intentional Awkwardness",
-      outlet: "The Royal Society of Spatial Tension"
+      quote: "Do you know how hard it is to stay mad when someone hands you a warm chocolate chip cookie? You can't do it. Your anger just melts.",
+      author: "Bill Burr",
+      title: "I'm Sorry You Feel That Way",
+      outlet: "Stand-Up Special"
+    },
+
+    // Michael Che
+    {
+      quote: "My credit score is basically just a number telling companies how much they can disrespect me.",
+      author: "Michael Che",
+      title: "Michael Che Matters",
+      outlet: "Netflix Comedy Special"
     },
     {
-      quote: "The foliage appears fully aware that winter is approaching and is quietly, deeply resentful of the entire meteorological process.",
-      author: "Eustace C. Finch",
-      title: "Chief Editor of Deciduous Grievances",
-      outlet: "Midland Botanical Dispatches",
-      category: "Landscape"
+      quote: "I don't need a motivational quote on my wall. I need someone to come slap my phone out of my hand at two in the morning.",
+      author: "Michael Che",
+      title: "Shame the Devil",
+      outlet: "Netflix Comedy Special"
     },
     {
-      quote: "Rarely does negative space feel so profoundly judgment-free, yet subtly disappointed in everything you've accomplished this fiscal quarter.",
-      author: "Dr. Veronika Kroll",
-      title: "Adjunct Professor of Semi-Industrial Yearning",
-      outlet: "Berlin Visual Symposium"
+      quote: "Honesty in a relationship is great until you realize your partner was actually listening to your honest opinion about their family's cooking.",
+      author: "Michael Che",
+      title: "Live at the Comedy Cellar",
+      outlet: "Stand-Up Set"
     },
     {
-      quote: "The asphalt texture here speaks fluent French. Brutalist, unforgiving, yet strangely comforting like an overcast Tuesday in Sudbury.",
-      author: "Henri-Luc de la Tour",
-      title: "Visiting Scholar of Concrete Grief",
-      outlet: "La Gazette des Surfaces Oubliées"
+      quote: "I don't like exercise because the reward for exercising is just that you get to be tired for the rest of the day.",
+      author: "Michael Che",
+      title: "Michael Che Matters",
+      outlet: "Netflix Comedy Special"
+    },
+
+    // Nate Bargatze
+    {
+      quote: "I went to a hotel and they said, 'We have a heated pool.' I touched it, and it was freezing. I said, 'This isn't heated.' They said, 'Well, the heater is broken.' So you have a regular pool. You don't get to keep the adjectives if the machine doesn't work.",
+      author: "Nate Bargatze",
+      title: "The Tennessee Kid",
+      outlet: "Netflix Comedy Special"
     },
     {
-      quote: "To gaze upon this composition is to understand that gravity is not merely a physical constant, but a personal artistic grievance.",
-      author: "Barnaby Finch-Cromwell",
-      title: "Author of 'Why That Puddle Matters (A Manifesto)'",
-      outlet: "The Avant-Boreal Courier"
+      quote: "My wife told me to read the room. I don't even know what room we're in half the time. I'm just happy I found my car keys.",
+      author: "Nate Bargatze",
+      title: "The Greatest Average American",
+      outlet: "Netflix Comedy Special"
     },
     {
-      quote: "The shutter speed is so calculated it feels like an administrative audit carried out by a very poetic tax attorney.",
-      author: "Vivienne St. Claire",
-      title: "Curator of Bureaucratic Light",
-      outlet: "The Oxford Journal of Reluctant Cinema"
+      quote: "I don't think my GPS understands my driving style. It recalculates with a tone that sounds like my father sighing.",
+      author: "Nate Bargatze",
+      title: "Hello World",
+      outlet: "Amazon Prime Special"
     },
     {
-      quote: "A masterclass in textural hostility. If this photograph had a scent, it would be cold lake water, wet dog fur, and wool socks that never truly dry.",
-      author: "Reginald Thorpe-Smythe",
-      title: "Principal Examiner of Damp Textiles",
-      outlet: "The Northern Ontario Monograph",
-      category: "Animals"
+      quote: "My math level stopped right around fractions. If you tell me something is three-eighths off, I just nod and hand you twenty dollars.",
+      author: "Nate Bargatze",
+      title: "Full Time Magic",
+      outlet: "Comedy Central Records"
+    },
+
+    // Mitch Hedberg
+    {
+      quote: "An escalator can never break: it can only become stairs. You should never see an 'Escalator Temporarily Out of Order' sign, just 'Escalator Temporarily Stairs. Sorry for the convenience.'",
+      author: "Mitch Hedberg",
+      title: "Strategic Grill Locations",
+      outlet: "Stand-Up Comedy Album"
     },
     {
-      quote: "The lighting here does not illuminate; it merely tolerates the presence of physical matter.",
-      author: "Dr. Sibyl Vane-Huxley",
-      title: "Director of Darkroom Nihilism",
-      outlet: "The Vienna Camera Guild"
+      quote: "I haven't slept for ten days, because that would be too long.",
+      author: "Mitch Hedberg",
+      title: "Mitch All Together",
+      outlet: "Comedy Central Records"
     },
     {
-      quote: "It takes tremendous courage to photograph an empty boardwalk with such unyielding emotional violence.",
-      author: "Crispin Wodehouse",
-      title: "Special Envoy for Linear Loneliness",
-      outlet: "The Westminster Review of Planks",
-      category: "Landscape"
+      quote: "My friend asked me if I wanted a frozen banana, and I said 'No, but I want a regular banana later, so yeah.'",
+      author: "Mitch Hedberg",
+      title: "Do You Believe in Gosh?",
+      outlet: "Stand-Up Special"
     },
     {
-      quote: "There is an austere dignity in how the silver patina catches the light, practically daring the viewer to question its purpose.",
-      author: "Maximilian Von Gotha",
-      title: "Keeper of Cutlery Epistemology",
-      outlet: "The Munich Journal of Utensil Studies",
-      category: "Still Life"
+      quote: "Rice is great if you're really hungry and want to eat two thousand of something.",
+      author: "Mitch Hedberg",
+      title: "Strategic Grill Locations",
+      outlet: "Stand-Up Album"
+    },
+
+    // Taylor Tomlinson
+    {
+      quote: "Having your life together in your twenties is like having a nice apartment in a horror movie. You just know something terrible is about to crash through the window.",
+      author: "Taylor Tomlinson",
+      title: "Quarter-Life Crisis",
+      outlet: "Netflix Comedy Special"
     },
     {
-      quote: "Lacroix treats the Canadian shield not as topography, but as an unpaid psychological tab that none of us are solvent enough to settle.",
-      author: "Daphne Sterling-Pike",
-      title: "Correspondent for Bleak Latitudes",
-      outlet: "The St. Lawrence Observer"
+      quote: "Therapy is great because you pay someone a hundred dollars an hour to tell you, 'Yeah, your mom was definitely weird about that.'",
+      author: "Taylor Tomlinson",
+      title: "Look At You",
+      outlet: "Netflix Comedy Special"
+    },
+    {
+      quote: "I want to be spontaneous, but I also need four to seven business days notice before anyone asks me to leave my house.",
+      author: "Taylor Tomlinson",
+      title: "Have It All",
+      outlet: "Netflix Comedy Special"
+    },
+
+    // John Mulaney
+    {
+      quote: "In terms of instant relief, canceling plans is like heroin. It is an addictive high that you chase constantly.",
+      author: "John Mulaney",
+      title: "The Comeback Kid",
+      outlet: "Netflix Comedy Special"
+    },
+    {
+      quote: "College was a four-year masquerade party where the costume was 'someone who knows what a 401(k) is.'",
+      author: "John Mulaney",
+      title: "Kid Gorgeous at Radio City",
+      outlet: "Stand-Up Special"
+    },
+
+    // Kyle Kinane
+    {
+      quote: "I don't need a fitness tracker to tell me I haven't taken enough steps today. The dent in my sofa cushions is already judging me.",
+      author: "Kyle Kinane",
+      title: "I Liked His Old Stuff Better",
+      outlet: "Comedy Central Special"
+    },
+    {
+      quote: "Pancake mix is the only grocery item bought with 100% optimism and 0% realistic assessment of Sunday morning energy.",
+      author: "Kyle Kinane",
+      title: "Trampoline in a Ditch",
+      outlet: "Stand-Up Comedy Album"
+    },
+
+    // Sam Morril
+    {
+      quote: "I'm not saying I'm bad under pressure, but if you ask me for my phone number while people are waiting behind me in line, I will guess.",
+      author: "Sam Morril",
+      title: "Same Time Tomorrow",
+      outlet: "Netflix Comedy Special"
+    },
+    {
+      quote: "I love New York because nobody cares what you're doing unless you're walking too slow on the sidewalk. Then it's a municipal emergency.",
+      author: "Sam Morril",
+      title: "I Got This",
+      outlet: "YouTube Special"
+    },
+
+    // Maria Bamford
+    {
+      quote: "If you're feeling down, just remember: you don't have to accomplish anything great today. Simply not setting anything on fire is a solid B-plus.",
+      author: "Maria Bamford",
+      title: "Old Baby",
+      outlet: "Netflix Comedy Special"
+    },
+
+    // Steven Wright
+    {
+      quote: "I bought some instant water, but I didn't know what to add to it.",
+      author: "Steven Wright",
+      title: "I Have a Pony",
+      outlet: "Warner Bros. Records"
+    },
+    {
+      quote: "Every place is walking distance if you have the time.",
+      author: "Steven Wright",
+      title: "A Steven Wright Special",
+      outlet: "HBO Special"
+    },
+
+    // Gary Gulman
+    {
+      quote: "The postal abbreviation meeting is the greatest comedy sketch never written. Two guys in 1963 with a map and a pot of coffee deciding Alaska is AK and Arkansas is AR.",
+      author: "Gary Gulman",
+      title: "The Great Deprecators",
+      outlet: "Stand-Up Special"
+    },
+
+    // Mike Birbiglia
+    {
+      quote: "I'm in the kind of physical shape where if someone says 'Let's take the stairs,' I evaluate how much I truly care about seeing them at the top.",
+      author: "Mike Birbiglia",
+      title: "My Girlfriend's Boyfriend",
+      outlet: "Stand-Up Special"
+    },
+    {
+      quote: "The hardest part of an argument in a relationship isn't admitting you're wrong; it's realizing you were loud while being wrong.",
+      author: "Mike Birbiglia",
+      title: "The New One",
+      outlet: "Broadway & Netflix"
+    },
+
+    // Demetri Martin
+    {
+      quote: "I like to leave a little bit of toothpaste in the sink just so the bathroom knows I've been there and I will be back.",
+      author: "Demetri Martin",
+      title: "These Are Jokes",
+      outlet: "Stand-Up Comedy"
+    },
+
+    // Hannibal Buress
+    {
+      quote: "Jaywalking is a fantasy crime. Who came up with that? 'Hey! You're walking on the street! Streets are for cars, sidewalks are for people! Go back to your lane!'",
+      author: "Hannibal Buress",
+      title: "Animal Furnace",
+      outlet: "Comedy Central Special"
     }
   ];
 
@@ -459,12 +606,12 @@ const photosJson = JSON.stringify(sanitizedPhotos);
     const modalMeta = document.getElementById('modal-meta');
     const btnCloseModal = document.getElementById('btn-close-modal');
 
-    // Praise Elements
-    const praiseQuote = document.getElementById('praise-quote');
-    const praiseAuthor = document.getElementById('praise-author');
-    const praiseTitle = document.getElementById('praise-title');
-    const praiseOutlet = document.getElementById('praise-outlet');
-    const btnShufflePraise = document.getElementById('btn-shuffle-praise');
+    // Stand-Up Comedy Elements
+    const jokeQuote = document.getElementById('joke-quote') || document.getElementById('praise-quote');
+    const jokeAuthor = document.getElementById('joke-author') || document.getElementById('praise-author');
+    const jokeTitle = document.getElementById('joke-title') || document.getElementById('praise-title');
+    const jokeOutlet = document.getElementById('joke-outlet') || document.getElementById('praise-outlet');
+    const btnShuffleJoke = document.getElementById('btn-shuffle-joke') || document.getElementById('btn-shuffle-praise');
 
     // Simulated optical lenses for artistic cinematography telemetry
     const lenses = [
@@ -478,42 +625,53 @@ const photosJson = JSON.stringify(sanitizedPhotos);
     ];
 
     let currentIndex = Math.floor(Math.random() * photos.length);
-    let currentPraiseIndex = -1;
+    let currentJokeIndex = -1;
     let isAutoCycling = false;
     let cycleTimer: any = null;
     let cycleProgressTimer: any = null;
     const CYCLE_DURATION = 4000; // ms
 
-    function pickPraise(category: string): PraiseItem {
-      const matching = praises.filter(p => !p.category || p.category.toLowerCase() === category.toLowerCase());
-      const pool = matching.length > 0 ? matching : praises;
+    function pickJoke(): JokeItem {
+      if (jokes.length === 0) {
+        return {
+          quote: "I haven't slept for ten days, because that would be too long.",
+          author: "Mitch Hedberg",
+          title: "Mitch All Together",
+          outlet: "Stand-Up Comedy"
+        };
+      }
+      if (jokes.length === 1) return jokes[0];
 
-      let nextPraiseIdx = Math.floor(Math.random() * pool.length);
-      const chosen = pool[nextPraiseIdx];
-      currentPraiseIndex = praises.indexOf(chosen);
-      return chosen;
+      let nextJokeIdx = Math.floor(Math.random() * jokes.length);
+      let attempts = 0;
+      while (nextJokeIdx === currentJokeIndex && attempts < 10) {
+        nextJokeIdx = Math.floor(Math.random() * jokes.length);
+        attempts++;
+      }
+      currentJokeIndex = nextJokeIdx;
+      return jokes[currentJokeIndex];
     }
 
-    function updatePraise(category: string, animate = true) {
-      const praise = pickPraise(category);
-      if (!praiseQuote) return;
+    function updateJoke(animate = true) {
+      const joke = pickJoke();
+      if (!jokeQuote) return;
 
       if (animate) {
-        praiseQuote.style.opacity = '0';
+        jokeQuote.style.opacity = '0';
         setTimeout(() => {
-          applyPraise(praise);
-          praiseQuote.style.opacity = '1';
+          applyJoke(joke);
+          jokeQuote.style.opacity = '1';
         }, 150);
       } else {
-        applyPraise(praise);
+        applyJoke(joke);
       }
     }
 
-    function applyPraise(praise: PraiseItem) {
-      if (praiseQuote) praiseQuote.textContent = praise.quote;
-      if (praiseAuthor) praiseAuthor.textContent = praise.author;
-      if (praiseTitle) praiseTitle.textContent = praise.title;
-      if (praiseOutlet) praiseOutlet.textContent = praise.outlet;
+    function applyJoke(joke: JokeItem) {
+      if (jokeQuote) jokeQuote.textContent = joke.quote;
+      if (jokeAuthor) jokeAuthor.textContent = joke.author;
+      if (jokeTitle) jokeTitle.textContent = `Bit: "${joke.title}"`;
+      if (jokeOutlet) jokeOutlet.textContent = joke.outlet;
     }
 
     function displayPhoto(index: number, animate = true) {
@@ -549,8 +707,8 @@ const photosJson = JSON.stringify(sanitizedPhotos);
           metaIndex.textContent = `${formattedCurrent}/${formattedTotal}`;
         }
 
-        // Update the fake praise for this photo
-        updatePraise(photo.category, animate);
+        // Update stand-up comedy joke
+        updateJoke(animate);
 
         // Highlight active rack item with neon green
         updateActiveThumbnail(index);
@@ -685,10 +843,9 @@ const photosJson = JSON.stringify(sanitizedPhotos);
       }
     });
 
-    btnShufflePraise?.addEventListener('click', () => {
-      if (photos[currentIndex]) {
-        updatePraise(photos[currentIndex].category, true);
-      }
+    const shuffleJokeBtn = btnShuffleJoke || document.getElementById('btn-shuffle-praise');
+    shuffleJokeBtn?.addEventListener('click', () => {
+      updateJoke(true);
     });
 
     btnEnlarge?.addEventListener('click', openModal);
@@ -706,7 +863,7 @@ const photosJson = JSON.stringify(sanitizedPhotos);
       if (!inBox) modal.close();
     });
 
-    // Initialize display with a random photo & praise
+    // Initialize display with a random photo & stand-up comedy joke
     displayPhoto(currentIndex, false);
     renderThumbnailRack();
   }
