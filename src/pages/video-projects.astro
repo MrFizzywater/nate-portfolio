@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import settings from '../content/settings/general.json';
+import StatusBar from '../components/StatusBar.astro';
 import '../styles/global.css';
 
 const rawVideos = await getCollection('archive');
@@ -30,98 +31,155 @@ function getEmbedUrl(url: string = '') {
 ---
 
 <!DOCTYPE html>
-<html lang="en" class="bg-stone-950 text-stone-100 antialiased selection:bg-stone-800">
+<html lang="en" class="bg-[#07080a] text-zinc-100 antialiased selection:bg-purple-900/60 selection:text-[#00ff88]">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Video Projects — {settings.siteTitle || "Nate Lacroix"}</title>
 </head>
-<body class="min-h-screen flex flex-col justify-between font-sans">
+<body class="min-h-screen flex flex-col justify-between font-sans pb-14">
 
-  <header class="border-b border-stone-800/80 sticky top-0 bg-stone-950/90 backdrop-blur-md z-30">
-    <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div>
-        <a href="/" class="text-xl font-light tracking-tight text-white block">
-          {settings.siteTitle || "Nate Lacroix"}
+  <!-- Top Navigation (3-Zone Top Bar Contract with Neon Green & Purple Highlights) -->
+  <header class="sticky top-0 bg-[#090b0f]/95 backdrop-blur-md border-b border-zinc-800/80 z-30">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-8">
+      <!-- Zone 1: Single Brand Wordmark -->
+      <a 
+        href="/" 
+        class="text-lg font-medium tracking-tight text-white hover:text-[#00ff88] transition-colors uppercase whitespace-nowrap shrink-0 flex items-center gap-2"
+        data-flavor="STUDIO // Nate Lacroix — Midland, Ontario media production, cinema directing & photography"
+      >
+        <span class="w-2.5 h-2.5 bg-[#00ff88] transform rotate-45 inline-block shadow-[0_0_8px_rgba(0,255,136,0.6)]"></span>
+        <span>{settings.siteTitle || "Nate Lacroix"}</span>
+      </a>
+
+      <!-- Zone 2: 4-5 Concise Single-Line Navigation Links -->
+      <nav class="hidden md:flex items-center gap-8 text-xs font-mono uppercase tracking-widest text-zinc-400">
+        <a 
+          href="/" 
+          class="hover:text-[#c084fc] transition-colors whitespace-nowrap shrink-0"
+          data-flavor="WORK // Curated index of motion sequences, photography, and film studies"
+        >
+          Work
         </a>
-        <span class="text-[10px] uppercase tracking-[0.25em] text-stone-500">
-          Directing &amp; Editorial Archive
-        </span>
-      </div>
-      <nav class="flex items-center gap-5 sm:gap-6 text-xs uppercase tracking-widest font-medium">
-        <a href="/" class="text-stone-400 hover:text-white transition-colors">Work</a>
-        <a href="/galleries/" class="text-stone-400 hover:text-white transition-colors">Galleries</a>
-        <a href="/video-projects/" class="text-white border-b border-white pb-0.5">Video Projects</a>
-        <a href="/about/" class="text-stone-400 hover:text-white transition-colors">About</a>
-        <a href="/contact/" class="text-stone-400 hover:text-white transition-colors">Contact</a>
+        <a 
+          href="/galleries/" 
+          class="hover:text-[#c084fc] transition-colors whitespace-nowrap shrink-0"
+          data-flavor="GALLERIES // Curated location series and continuous photo archives"
+        >
+          Galleries
+        </a>
+        <a 
+          href="/video-projects/" 
+          class="text-white border-b-2 border-[#00ff88] pb-0.5 whitespace-nowrap shrink-0"
+          data-flavor="VIDEO PROJECTS // Directorial music videos, short films, and editorial reels"
+        >
+          Video Projects
+        </a>
+        <a 
+          href="/about/" 
+          class="hover:text-[#c084fc] transition-colors whitespace-nowrap shrink-0"
+          data-flavor="ABOUT // Profile, artist statement, and directorial background"
+        >
+          About
+        </a>
       </nav>
+
+      <!-- Zone 3: 1 Primary Action Control (Angular Metallic Button) -->
+      <div class="flex items-center gap-3 shrink-0">
+        <a 
+          href="/contact/" 
+          class="btn-steel chamfer-btn px-4 py-2 text-xs font-mono uppercase tracking-wider whitespace-nowrap shrink-0 inline-flex items-center gap-2 hover:border-[#00ff88]"
+          data-flavor="INQUIRIES // Direct electronic mail and commercial production dispatch"
+        >
+          <span>Direct Inquiries</span>
+          <span class="text-[#00ff88]">&rarr;</span>
+        </a>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-5xl mx-auto px-6 py-16 flex-grow w-full">
-    <div class="mb-12">
-      <h1 class="text-3xl sm:text-4xl font-light tracking-tight text-white">Video Projects</h1>
-      <p class="text-stone-400 text-sm mt-2 max-w-xl font-light">
-        A catalog of past music videos, short-form documentaries, and editorial sequences.
-      </p>
+  <main class="max-w-6xl mx-auto px-6 py-12 flex-grow w-full space-y-12">
+    <div class="border-b border-zinc-800/80 pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500">
+          <span class="text-[#00ff88]">■</span>
+          <span>Motion Archive</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-light tracking-tight text-white mt-1">Video Projects</h1>
+        <p class="text-zinc-400 text-sm mt-2 max-w-xl font-light">
+          Catalog of music videos, atmospheric documentaries, and commercial motion sequences.
+        </p>
+      </div>
+      <div class="text-xs font-mono text-purple-300 tabular-nums">
+        TOTAL ARCHIVE: {videos.length} ENTRIES
+      </div>
     </div>
 
     {videos.length === 0 ? (
-      <div class="py-24 text-center">
-        <p class="text-stone-500 text-sm font-mono">[ARCHIVE] No video projects published yet.</p>
+      <div class="py-24 text-center border border-zinc-800 bg-[#0d0f14] p-8">
+        <p class="text-zinc-500 text-sm font-mono">[ARCHIVE] No video projects published yet.</p>
       </div>
     ) : (
-      <div class="divide-y divide-stone-900 border-t border-b border-stone-900">
+      <div class="space-y-8">
         {videos.map(({ data, id, Content }) => {
           const embed = getEmbedUrl(data.videoUrl);
           const modalId = `video-modal-${id}`;
+          const videoFlavor = data.flavor || `${data.title} (${data.year}) — Role: ${data.role} ${data.client ? `• Client: ${data.client}` : ''}`;
           return (
-            <article class="py-10 grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-              <button
-                type="button"
-                class="aspect-video bg-stone-900 border border-stone-800 overflow-hidden relative group text-left cursor-pointer w-full block"
-                data-open-modal={modalId}
-              >
-                <img 
-                  src={data.coverImage} 
-                  alt={data.title} 
-                  class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" 
-                  loading="lazy" 
-                />
-                <div class="absolute inset-0 bg-stone-950/40 group-hover:bg-stone-950/20 transition-colors flex items-center justify-center">
-                  <div class="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <span class="text-white text-xs pl-0.5">&#9658;</span>
+            <article 
+              class="metallic-panel tech-corner border border-zinc-800/90 p-6 grid grid-cols-1 md:grid-cols-12 gap-8 items-start transition-all duration-200 hover:border-purple-500"
+              data-flavor={videoFlavor}
+            >
+              <div class="md:col-span-5">
+                <button
+                  type="button"
+                  class="aspect-video bg-black border border-zinc-800 overflow-hidden relative group text-left cursor-pointer w-full block"
+                  data-open-modal={modalId}
+                  data-flavor={`PLAY // Screen ${data.title} (${data.year}) in cinema modal`}
+                >
+                  <img 
+                    src={data.coverImage} 
+                    alt={data.title} 
+                    class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" 
+                    loading="lazy" 
+                  />
+                  <div class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                    <div class="w-12 h-12 bg-zinc-900/90 backdrop-blur-md border border-zinc-700 flex items-center justify-center group-hover:scale-110 group-hover:border-[#00ff88] transition-all shadow-xl">
+                      <span class="text-[#00ff88] text-xs pl-0.5">&#9658;</span>
+                    </div>
                   </div>
-                </div>
-              </button>
+                </button>
+              </div>
 
-              <div class="md:col-span-2 space-y-3">
-                <div class="flex items-center gap-3 text-[11px] font-mono uppercase tracking-widest text-stone-500">
-                  <span>{data.category}</span>
-                  <span>&bull;</span>
-                  <span>{data.year}</span>
+              <div class="md:col-span-7 space-y-3">
+                <div class="flex items-center gap-3 text-[11px] font-mono uppercase tracking-widest text-zinc-400">
+                  <span class="text-purple-400 font-semibold">{data.category}</span>
+                  <span>·</span>
+                  <span class="tabular-nums text-zinc-300">{data.year}</span>
                   {data.client && (
                     <>
-                      <span>&bull;</span>
-                      <span class="text-stone-400">{data.client}</span>
+                      <span>·</span>
+                      <span class="text-[#00ff88]">{data.client}</span>
                     </>
                   )}
                 </div>
 
                 <h2 class="text-2xl font-light text-white tracking-tight">{data.title}</h2>
-                <p class="text-xs uppercase tracking-wider text-stone-400">Role: {data.role}</p>
+                <p class="text-xs font-mono uppercase tracking-wider text-purple-300/80">ROLE: {data.role}</p>
 
-                <div class="text-stone-300 text-sm font-light leading-relaxed prose prose-invert">
+                <div class="text-zinc-300 text-sm font-light leading-relaxed prose prose-invert prose-zinc max-w-none pt-1">
                   <Content />
                 </div>
 
-                <div class="pt-2">
+                <div class="pt-3">
                   <button 
-                    type="button"
-                    class="inline-block text-xs uppercase tracking-[0.2em] border border-stone-700 hover:border-white text-stone-200 hover:text-white px-4 py-2 transition-colors cursor-pointer"
+                    type="button" 
+                    class="btn-steel chamfer-btn px-4 py-2 text-xs font-mono uppercase tracking-wider cursor-pointer inline-flex items-center gap-2 hover:border-[#00ff88]"
                     data-open-modal={modalId}
+                    data-flavor={`WATCH // Launch media player for ${data.title}`}
                   >
-                    Watch Reel / Video &rarr;
+                    <span>Watch Reel</span>
+                    <span class="text-[#00ff88]">&rarr;</span>
                   </button>
                 </div>
               </div>
@@ -129,15 +187,15 @@ function getEmbedUrl(url: string = '') {
               <!-- Lightbox Modal -->
               <dialog 
                 id={modalId} 
-                class="m-auto p-0 rounded-xs backdrop:bg-stone-950/90 bg-stone-900 text-stone-100 max-w-5xl w-[94vw] max-h-[92vh] overflow-hidden shadow-2xl border border-stone-800"
+                class="m-auto p-0 rounded-none backdrop:bg-black/90 bg-zinc-950 text-zinc-100 max-w-5xl w-[94vw] max-h-[92vh] overflow-hidden shadow-2xl border border-zinc-700"
                 data-video-dialog
               >
-                <div class="relative bg-black flex flex-col">
-                  <div class="flex items-center justify-between p-4 bg-stone-950 border-b border-stone-850">
-                    <span class="text-xs uppercase tracking-widest text-stone-400 truncate pr-4">{data.title}</span>
+                <div class="relative bg-zinc-950 flex flex-col">
+                  <div class="flex items-center justify-between p-4 bg-zinc-900 border-b border-zinc-800">
+                    <span class="text-xs uppercase tracking-widest text-[#00ff88] font-mono truncate pr-4">{data.title}</span>
                     <button 
                       type="button"
-                      class="text-stone-400 hover:text-white text-2xl font-light leading-none cursor-pointer px-2"
+                      class="text-zinc-400 hover:text-[#00ff88] text-2xl font-light leading-none cursor-pointer px-2 transition-colors"
                       onclick={`document.getElementById('${modalId}').close()`}
                       aria-label="Close"
                     >
@@ -149,7 +207,7 @@ function getEmbedUrl(url: string = '') {
                     {embed?.type === 'iframe' && (
                       <iframe 
                         data-src={embed.src} 
-                        title={data.title}
+                        title={data.title} 
                         class="w-full h-full border-0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                         allowfullscreen
@@ -161,7 +219,7 @@ function getEmbedUrl(url: string = '') {
                       </video>
                     )}
                     {!embed && (
-                      <p class="text-stone-500 text-xs font-mono">No video link provided for this entry.</p>
+                      <p class="text-zinc-500 text-xs font-mono">No video link provided for this entry.</p>
                     )}
                   </div>
                 </div>
@@ -173,12 +231,24 @@ function getEmbedUrl(url: string = '') {
     )}
   </main>
 
-  <footer class="border-t border-stone-900 py-8 text-center text-[10px] uppercase tracking-widest text-stone-600">
-    &copy; 2026 {settings.siteTitle || "Nate Lacroix"}. All rights reserved.
+  <footer class="border-t border-zinc-800/90 bg-[#08090d] py-8 px-6 mt-16 mb-6">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-mono text-zinc-500">
+      <div class="flex items-center gap-3">
+        <span class="w-2 h-2 bg-[#00ff88] transform rotate-45 inline-block"></span>
+        <span>&copy; 2026 {settings.siteTitle || "Nate Lacroix"}. All rights reserved.</span>
+      </div>
+      <div class="flex items-center gap-4 text-[11px] text-zinc-400 uppercase tracking-widest">
+        <span class="text-purple-300/80">Midland, Ontario</span>
+        <span>·</span>
+        <span>Video Projects</span>
+      </div>
+    </div>
   </footer>
 
+  <!-- Interactive Status Bar -->
+  <StatusBar defaultText="VIDEO ARCHIVE // Hover over projects to inspect directorial details" />
+
   <script>
-    // Dynamic open handlers (inject src on click only)
     document.querySelectorAll('[data-open-modal]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const modalId = btn.getAttribute('data-open-modal');
@@ -203,12 +273,11 @@ function getEmbedUrl(url: string = '') {
       });
     });
 
-    // Teardown and pause on modal close
     document.querySelectorAll('[data-video-dialog]').forEach((dialog) => {
       dialog.addEventListener('close', () => {
         const iframe = dialog.querySelector('iframe');
         if (iframe) {
-          iframe.removeAttribute('src'); // Unload immediately
+          iframe.removeAttribute('src');
         }
         const video = dialog.querySelector('video');
         if (video) {

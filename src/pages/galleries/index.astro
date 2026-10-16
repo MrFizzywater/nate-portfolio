@@ -1,63 +1,132 @@
 ---
+import { getCollection } from 'astro:content';
 import { getBunnyGalleries } from '../../lib/bunny';
 import settings from '../../content/settings/general.json';
+import StatusBar from '../../components/StatusBar.astro';
 import '../../styles/global.css';
 
-const collections = await getBunnyGalleries();
+const localPhotos = await getCollection('photos');
+const bunnyCollections = await getBunnyGalleries();
+
+let allCollections = [...bunnyCollections];
+
+if (allCollections.length === 0 && localPhotos.length > 0) {
+  const categories = [...new Set(localPhotos.map((p) => p.data.category))];
+  for (const cat of categories) {
+    const catPhotos = localPhotos.filter((p) => p.data.category === cat);
+    allCollections.push({
+      folder: cat.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      title: cat,
+      images: catPhotos.map((p) => ({
+        name: p.data.title,
+        url: p.data.image,
+      })),
+    });
+  }
+}
 ---
 
 <!DOCTYPE html>
-<html lang="en" class="bg-stone-950 text-stone-100 antialiased selection:bg-stone-800">
+<html lang="en" class="bg-[#07080a] text-zinc-100 antialiased selection:bg-purple-900/60 selection:text-[#00ff88]">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Galleries — {settings.siteTitle || "Nate Lacroix"}</title>
 </head>
-<body class="min-h-screen flex flex-col justify-between font-sans">
+<body class="min-h-screen flex flex-col justify-between font-sans pb-14">
 
-  <header class="border-b border-stone-800/80 sticky top-0 bg-stone-950/90 backdrop-blur-md z-30">
-    <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div>
-        <a href="/" class="text-xl font-light tracking-tight text-white block">
-          {settings.siteTitle || "Nate Lacroix"}
+  <!-- Top Navigation (3-Zone Top Bar Contract with Neon Green & Purple Highlights) -->
+  <header class="sticky top-0 bg-[#090b0f]/95 backdrop-blur-md border-b border-zinc-800/80 z-30">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-8">
+      <!-- Zone 1: Single Brand Wordmark -->
+      <a 
+        href="/" 
+        class="text-lg font-medium tracking-tight text-white hover:text-[#00ff88] transition-colors uppercase whitespace-nowrap shrink-0 flex items-center gap-2"
+        data-flavor="STUDIO // Nate Lacroix — Midland, Ontario media production, cinema directing & photography"
+      >
+        <span class="w-2.5 h-2.5 bg-[#00ff88] transform rotate-45 inline-block shadow-[0_0_8px_rgba(0,255,136,0.6)]"></span>
+        <span>{settings.siteTitle || "Nate Lacroix"}</span>
+      </a>
+
+      <!-- Zone 2: 4-5 Concise Single-Line Navigation Links -->
+      <nav class="hidden md:flex items-center gap-8 text-xs font-mono uppercase tracking-widest text-zinc-400">
+        <a 
+          href="/" 
+          class="hover:text-[#c084fc] transition-colors whitespace-nowrap shrink-0"
+          data-flavor="WORK // Curated index of motion sequences, photography, and film studies"
+        >
+          Work
         </a>
-        <span class="text-[10px] uppercase tracking-[0.25em] text-stone-500">
-          Photo Collections
-        </span>
-      </div>
-      <nav class="flex items-center gap-5 sm:gap-6 text-xs uppercase tracking-widest font-medium">
-        <a href="/" class="text-stone-400 hover:text-white transition-colors">Work</a>
-        <a href="/galleries/" class="text-white border-b border-white pb-0.5">Galleries</a>
-        <a href="/video-projects/" class="text-stone-400 hover:text-white transition-colors">Video Projects</a>
-        <a href="/about/" class="text-stone-400 hover:text-white transition-colors">About</a>
-        <a href="/contact/" class="text-stone-400 hover:text-white transition-colors">Contact</a>
+        <a 
+          href="/galleries/" 
+          class="text-white border-b-2 border-[#00ff88] pb-0.5 whitespace-nowrap shrink-0"
+          data-flavor="GALLERIES // Curated location series and continuous photo archives"
+        >
+          Galleries
+        </a>
+        <a 
+          href="/video-projects/" 
+          class="hover:text-[#c084fc] transition-colors whitespace-nowrap shrink-0"
+          data-flavor="VIDEO PROJECTS // Directorial music videos, short films, and editorial reels"
+        >
+          Video Projects
+        </a>
+        <a 
+          href="/about/" 
+          class="hover:text-[#c084fc] transition-colors whitespace-nowrap shrink-0"
+          data-flavor="ABOUT // Profile, artist statement, and directorial background"
+        >
+          About
+        </a>
       </nav>
+
+      <!-- Zone 3: 1 Primary Action Control (Angular Metallic Button) -->
+      <div class="flex items-center gap-3 shrink-0">
+        <a 
+          href="/contact/" 
+          class="btn-steel chamfer-btn px-4 py-2 text-xs font-mono uppercase tracking-wider whitespace-nowrap shrink-0 inline-flex items-center gap-2 hover:border-[#00ff88]"
+          data-flavor="INQUIRIES // Direct electronic mail and commercial production dispatch"
+        >
+          <span>Direct Inquiries</span>
+          <span class="text-[#00ff88]">&rarr;</span>
+        </a>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-6 py-16 flex-grow w-full">
-    <div class="mb-12">
-      <h1 class="text-3xl sm:text-4xl font-light tracking-tight text-white">Galleries</h1>
-      <p class="text-stone-400 text-sm mt-2 max-w-xl font-light">
-        Curated location series and continuous photo archives stored on Bunny Storage.
-      </p>
+  <main class="max-w-7xl mx-auto px-6 py-12 flex-grow w-full space-y-10">
+    <div class="border-b border-zinc-800/80 pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500">
+          <span class="text-[#00ff88]">■</span>
+          <span>Curated Archives</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-light tracking-tight text-white mt-1">Photo Galleries</h1>
+        <p class="text-zinc-400 text-sm mt-2 max-w-xl font-light">
+          Location series, atmospheric textures, and continuous photographic studies across Georgian Bay.
+        </p>
+      </div>
+
+      <div class="text-xs font-mono text-purple-300 tabular-nums">
+        TOTAL ARCHIVES: {allCollections.length} SERIES
+      </div>
     </div>
 
-    {collections.length === 0 ? (
-      <div class="py-24 text-center">
-        <p class="text-stone-500 text-sm font-mono">[BUNNY STORAGE] No gallery subfolders found in /galleries/.</p>
+    {allCollections.length === 0 ? (
+      <div class="py-24 text-center border border-zinc-800 bg-[#0d0f14] p-8">
+        <p class="text-zinc-500 text-sm font-mono">No gallery series configured. Add photos via content collections.</p>
       </div>
     ) : (
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {collections.map((col) => {
-          // Select one random image from the collection for the cover
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {allCollections.map((col) => {
           const coverImg = col.images[Math.floor(Math.random() * col.images.length)] || col.images[0];
           return (
             <a 
               href={`/galleries/${col.folder}/`} 
-              class="group flex flex-col bg-stone-900/40 border border-stone-800/80 p-3 hover:border-stone-600 transition-all duration-300"
+              class="group metallic-panel tech-corner border border-zinc-800/90 p-3 hover:border-purple-500 transition-all duration-300 block"
+              data-flavor={`SERIES // ${col.title} — ${col.images.length} frames documented in collection`}
             >
-              <div class="aspect-4/3 bg-stone-950 overflow-hidden relative mb-4">
+              <div class="aspect-[4/3] bg-black overflow-hidden relative mb-4 border border-zinc-800">
                 {coverImg ? (
                   <img 
                     src={coverImg.url} 
@@ -66,17 +135,25 @@ const collections = await getBunnyGalleries();
                     loading="lazy"
                   />
                 ) : (
-                  <div class="w-full h-full flex items-center justify-center text-stone-700 text-xs font-mono">Empty</div>
+                  <div class="w-full h-full flex items-center justify-center text-zinc-700 text-xs font-mono">Empty</div>
                 )}
-                <div class="absolute inset-0 bg-stone-950/20 group-hover:bg-transparent transition-colors"></div>
+                <div class="absolute inset-0 bg-black/30 group-hover:bg-transparent transition-colors"></div>
+                <div class="absolute bottom-2 right-2 bg-black/80 px-2 py-1 text-[10px] font-mono text-[#00ff88] border border-zinc-700/80">
+                  {col.images.length} FRAMES
+                </div>
               </div>
 
-              <div class="flex justify-between items-baseline pt-1">
-                <h2 class="text-lg font-light text-stone-100 group-hover:text-white tracking-tight">
-                  {col.title}
-                </h2>
-                <span class="text-[11px] font-mono text-stone-500">
-                  {col.images.length} frames &rarr;
+              <div class="flex justify-between items-baseline pt-1 px-1">
+                <div>
+                  <h2 class="text-base font-medium text-zinc-100 group-hover:text-[#00ff88] tracking-tight transition-colors">
+                    {col.title}
+                  </h2>
+                  <span class="text-[10px] font-mono text-purple-400 uppercase tracking-widest block mt-0.5">
+                    Series Collection
+                  </span>
+                </div>
+                <span class="text-xs font-mono text-[#00ff88] group-hover:translate-x-1 transition-transform">
+                  &rarr;
                 </span>
               </div>
             </a>
@@ -86,8 +163,21 @@ const collections = await getBunnyGalleries();
     )}
   </main>
 
-  <footer class="border-t border-stone-900 py-8 text-center text-[10px] uppercase tracking-widest text-stone-600">
-    &copy; 2026 {settings.siteTitle || "Nate Lacroix"}. All rights reserved.
+  <footer class="border-t border-zinc-800/90 bg-[#08090d] py-8 px-6 mt-16 mb-6">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-mono text-zinc-500">
+      <div class="flex items-center gap-3">
+        <span class="w-2 h-2 bg-[#00ff88] transform rotate-45 inline-block"></span>
+        <span>&copy; 2026 {settings.siteTitle || "Nate Lacroix"}. All rights reserved.</span>
+      </div>
+      <div class="flex items-center gap-4 text-[11px] text-zinc-400 uppercase tracking-widest">
+        <span class="text-purple-300/80">Midland, Ontario</span>
+        <span>·</span>
+        <span>Photography Archive</span>
+      </div>
+    </div>
   </footer>
+
+  <!-- Interactive Status Bar -->
+  <StatusBar defaultText="GALLERIES // Hover over collection series or navigation links to inspect" />
 </body>
 </html>

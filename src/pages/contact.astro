@@ -1,71 +1,190 @@
 ---
 import { getEntry } from 'astro:content';
 import settings from '../content/settings/general.json';
+import StatusBar from '../components/StatusBar.astro';
 import '../styles/global.css';
 
 const entry = await getEntry('pages', 'contact');
 ---
 
 <!DOCTYPE html>
-<html lang="en" class="bg-stone-950 text-stone-100 antialiased selection:bg-stone-800">
+<html lang="en" class="bg-[#07080a] text-zinc-100 antialiased selection:bg-purple-900/60 selection:text-[#00ff88]">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Contact — {settings.siteTitle || "Nate Lacroix"}</title>
 </head>
-<body class="min-h-screen flex flex-col justify-between font-sans">
-  <header class="border-b border-stone-800/80 sticky top-0 bg-stone-950/90 backdrop-blur-md z-30">
-    <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div>
-        <a href="/" class="text-xl font-light tracking-tight text-white block">
-          {settings.siteTitle || "Nate Lacroix"}
+<body class="min-h-screen flex flex-col justify-between font-sans pb-14">
+
+  <!-- Top Navigation (3-Zone Top Bar Contract) -->
+  <header class="sticky top-0 bg-[#090b0f]/95 backdrop-blur-md border-b border-zinc-800/80 z-30">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-8">
+      <!-- Zone 1: Single Brand Wordmark -->
+      <a 
+        href="/" 
+        class="text-lg font-medium tracking-tight text-white hover:text-[#00ff88] transition-colors uppercase whitespace-nowrap shrink-0 flex items-center gap-2"
+        data-flavor="STUDIO // Nate Lacroix — Midland, Ontario media production, cinema directing & photography"
+      >
+        <span class="w-2.5 h-2.5 bg-[#00ff88] transform rotate-45 inline-block shadow-[0_0_8px_rgba(0,255,136,0.6)]"></span>
+        <span>{settings.siteTitle || "Nate Lacroix"}</span>
+      </a>
+
+      <!-- Zone 2: 4-5 Concise Single-Line Navigation Links -->
+      <nav class="hidden md:flex items-center gap-8 text-xs font-mono uppercase tracking-widest text-zinc-400">
+        <a 
+          href="/" 
+          class="hover:text-[#c084fc] transition-colors whitespace-nowrap shrink-0"
+          data-flavor="WORK // Curated index of motion sequences, photography, and film studies"
+        >
+          Work
         </a>
-        <span class="text-[10px] uppercase tracking-[0.25em] text-stone-500">
-          {settings.tagline || "Photography • Moving Image"}
-        </span>
-      </div>
-      <nav class="flex items-center gap-5 sm:gap-6 text-xs uppercase tracking-widest font-medium">
-        <a href="/" class="text-stone-400 hover:text-white transition-colors">Work</a>
-        <a href="/galleries/" class="text-stone-400 hover:text-white transition-colors">Galleries</a>
-        <a href="/video-projects/" class="text-stone-400 hover:text-white transition-colors">Video Projects</a>
-        <a href="/about/" class="text-stone-400 hover:text-white transition-colors">About</a>
-        <a href="/contact/" class="text-white border-b border-white pb-0.5">Contact</a>
+        <a 
+          href="/galleries/" 
+          class="hover:text-[#c084fc] transition-colors whitespace-nowrap shrink-0"
+          data-flavor="GALLERIES // Curated location series and continuous photo archives"
+        >
+          Galleries
+        </a>
+        <a 
+          href="/video-projects/" 
+          class="hover:text-[#c084fc] transition-colors whitespace-nowrap shrink-0"
+          data-flavor="VIDEO PROJECTS // Directorial music videos, short films, and editorial reels"
+        >
+          Video Projects
+        </a>
+        <a 
+          href="/about/" 
+          class="hover:text-[#c084fc] transition-colors whitespace-nowrap shrink-0"
+          data-flavor="ABOUT // Profile, artist statement, and directorial background"
+        >
+          About
+        </a>
       </nav>
+
+      <!-- Zone 3: 1 Primary Action Control (Active on this page) -->
+      <div class="flex items-center gap-3 shrink-0">
+        <a 
+          href="/contact/" 
+          class="btn-steel chamfer-btn px-4 py-2 text-xs font-mono uppercase tracking-wider whitespace-nowrap shrink-0 inline-flex items-center gap-2 border-[#00ff88] ring-1 ring-[#00ff88]/50"
+          data-flavor="CURRENT // You are currently viewing the direct inquiries transmission portal"
+        >
+          <span>Direct Inquiries</span>
+          <span class="text-[#00ff88]">&rarr;</span>
+        </a>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-2xl mx-auto px-6 py-24 flex-grow w-full text-center">
-    <span class="text-[10px] uppercase tracking-[0.3em] text-stone-500 font-mono block mb-3">Direct Inquiries</span>
-    <h1 class="text-4xl sm:text-5xl font-light tracking-tight text-white mb-6">
-      {entry?.data.title || "Get In Touch"}
-    </h1>
+  <main class="max-w-3xl mx-auto px-6 py-20 flex-grow w-full space-y-12">
+    <div class="metallic-panel tech-corner border border-zinc-700/80 p-8 sm:p-12 text-center space-y-8">
+      <div class="space-y-2">
+        <div class="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500">
+          <span class="text-[#00ff88]">■</span>
+          <span class="text-[#00ff88]">Communications Terminal</span>
+        </div>
+        <h1 class="text-4xl sm:text-5xl font-light tracking-tight text-white">
+          {entry?.data.title || "Direct Inquiries"}
+        </h1>
+        <p class="text-zinc-400 text-sm sm:text-base font-light leading-relaxed max-w-lg mx-auto pt-2">
+          {entry?.data.intro || "For commercial motion directing, fine art print licensing, or editorial collaborations."}
+        </p>
+      </div>
 
-    <p class="text-stone-400 text-sm sm:text-base font-light leading-relaxed max-w-md mx-auto mb-10">
-      {entry?.data.intro || "For production inquiries, licensing, or collaborations."}
-    </p>
-
-    <div class="space-y-4">
-      {entry?.data.email && (
-        <div>
+      <!-- Prominent Direct Channel -->
+      <div 
+        class="p-8 bg-[#0c0e14] border border-zinc-800/90 space-y-4 transition-colors hover:border-purple-500/60"
+        data-flavor={`DIRECT MAIL // Send email transmission directly to ${entry?.data.email || 'nate@natelacroix.com'}`}
+      >
+        <span class="text-[10px] font-mono uppercase tracking-widest text-purple-400 block">Direct Electronic Mail</span>
+        {entry?.data.email && (
           <a 
             href={`mailto:${entry.data.email}`}
-            class="text-2xl sm:text-3xl font-light text-white hover:text-stone-400 border-b border-stone-700 pb-1 transition-colors"
+            class="text-xl sm:text-2xl font-mono text-white hover:text-[#00ff88] border-b border-zinc-700 hover:border-[#00ff88] pb-1 transition-colors inline-block tracking-tight"
+            data-flavor={`DISPATCH // Open mail client to compose message to ${entry.data.email}`}
           >
             {entry.data.email}
           </a>
+        )}
+        <div class="text-xs font-mono text-zinc-400 pt-2 flex items-center justify-center gap-4">
+          <span class="text-zinc-300">{entry?.data.location || "Midland, ON, Canada"}</span>
+          <span>·</span>
+          <span class="text-purple-300">EST / UTC-5</span>
         </div>
-      )}
+      </div>
 
-      {entry?.data.location && (
-        <p class="text-[11px] uppercase tracking-[0.25em] text-stone-500 pt-6">
-          {entry.data.location}
-        </p>
-      )}
+      <!-- Quick Message Form (Angular Dark Metallic) -->
+      <div class="border-t border-zinc-800/80 pt-8 text-left space-y-4">
+        <span class="text-xs font-mono uppercase tracking-widest text-zinc-400 block">Dispatch Message</span>
+        <form 
+          class="space-y-4"
+          onsubmit="event.preventDefault(); document.getElementById('form-feedback').classList.remove('hidden');"
+        >
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-1">Your Name</label>
+              <input 
+                type="text" 
+                required 
+                placeholder="Name or Studio"
+                class="w-full bg-black/80 border border-zinc-800 focus:border-[#00ff88] focus:outline-none px-3.5 py-2.5 text-xs font-mono text-white placeholder-zinc-700 transition-colors"
+                data-flavor="INPUT FIELD // Enter your full name, organization, or production studio"
+              />
+            </div>
+            <div>
+              <label class="block text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-1">Return Email</label>
+              <input 
+                type="email" 
+                required 
+                placeholder="name@domain.com"
+                class="w-full bg-black/80 border border-zinc-800 focus:border-[#00ff88] focus:outline-none px-3.5 py-2.5 text-xs font-mono text-white placeholder-zinc-700 transition-colors"
+                data-flavor="INPUT FIELD // Enter your return electronic email address for correspondence"
+              />
+            </div>
+          </div>
+          <div>
+            <label class="block text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-1">Inquiry Scope / Project Details</label>
+            <textarea 
+              rows="4" 
+              required 
+              placeholder="Describe your production timeline, licensing requirements, or project scope..."
+              class="w-full bg-black/80 border border-zinc-800 focus:border-[#00ff88] focus:outline-none px-3.5 py-2.5 text-xs font-mono text-white placeholder-zinc-700 transition-colors"
+              data-flavor="TEXT AREA // Detail your project scope, production timeline, or licensing inquiry"
+            ></textarea>
+          </div>
+          <div class="flex items-center justify-between">
+            <button 
+              type="submit" 
+              class="btn-steel chamfer-btn px-6 py-2.5 text-xs font-mono uppercase tracking-wider cursor-pointer inline-flex items-center gap-2 hover:border-[#00ff88]"
+              data-flavor="TRANSMIT // Dispatch written inquiry to studio inbox"
+            >
+              <span>Transmit Dispatch</span>
+              <span class="text-[#00ff88]">&rarr;</span>
+            </button>
+            <span id="form-feedback" class="hidden text-xs font-mono text-[#00ff88]">
+              ✓ Message dispatched to transmission queue
+            </span>
+          </div>
+        </form>
+      </div>
+
     </div>
   </main>
 
-  <footer class="border-t border-stone-900 py-8 text-center text-[10px] uppercase tracking-widest text-stone-600">
-    &copy; 2026 {settings.siteTitle || "Nate Lacroix"}.
+  <footer class="border-t border-zinc-800/90 bg-[#08090d] py-8 px-6 mt-16 mb-6">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-mono text-zinc-500">
+      <div class="flex items-center gap-3">
+        <span class="w-2 h-2 bg-[#00ff88] transform rotate-45 inline-block"></span>
+        <span>&copy; 2026 {settings.siteTitle || "Nate Lacroix"}. All rights reserved.</span>
+      </div>
+      <div class="flex items-center gap-4 text-[11px] text-zinc-400 uppercase tracking-widest">
+        <span class="text-purple-300/80">Midland, Ontario</span>
+        <span>·</span>
+        <span>Inquiries</span>
+      </div>
+    </div>
   </footer>
+
+  <!-- Interactive Status Bar -->
+  <StatusBar defaultText="COMMUNICATIONS // Direct inquiries, commercial proposals, and licensing" />
 </body>
 </html>

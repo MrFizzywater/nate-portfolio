@@ -1,0 +1,162 @@
+---
+// HuroniaMapBackground.astro: Stylized faded vector cartographic map of Huronia (Midland, Penetang, Tay, Severn Sound)
+---
+
+<div class="absolute inset-0 overflow-hidden pointer-events-none select-none z-0">
+  <!-- Subtle dark vignette overlay to ensure text contrast -->
+  <div class="absolute inset-0 bg-gradient-to-t from-[#0b0d12] via-[#0b0d12]/80 to-transparent z-10"></div>
+  <div class="absolute inset-0 bg-gradient-to-r from-[#0b0d12] via-transparent to-[#0b0d12]/90 z-10"></div>
+
+  <svg 
+    viewBox="0 0 600 500" 
+    class="w-full h-full object-cover opacity-25 mix-blend-screen scale-105 transform origin-center"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <defs>
+      <!-- Neon purple and neon green gradients -->
+      <linearGradient id="huronia-water" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#a855f7" stop-opacity="0.25" />
+        <stop offset="100%" stop-color="#00ff88" stop-opacity="0.1" />
+      </linearGradient>
+
+      <linearGradient id="huronia-glow-line" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#a855f7" stop-opacity="0.6" />
+        <stop offset="50%" stop-color="#00ff88" stop-opacity="0.8" />
+        <stop offset="100%" stop-color="#a855f7" stop-opacity="0.6" />
+      </linearGradient>
+
+      <pattern id="huronia-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255, 255, 255, 0.05)" stroke-width="0.5" />
+      </pattern>
+    </defs>
+
+    <!-- Background Grid -->
+    <rect width="600" height="500" fill="url(#huronia-grid)" />
+
+    <!-- Latitude / Longitude lines -->
+    <line x1="0" y1="120" x2="600" y2="120" stroke="rgba(168, 85, 247, 0.15)" stroke-width="0.75" stroke-dasharray="4,4" />
+    <line x1="0" y1="260" x2="600" y2="260" stroke="rgba(0, 255, 136, 0.15)" stroke-width="0.75" stroke-dasharray="4,4" />
+    <line x1="0" y1="400" x2="600" y2="400" stroke="rgba(168, 85, 247, 0.15)" stroke-width="0.75" stroke-dasharray="4,4" />
+
+    <line x1="160" y1="0" x2="160" y2="500" stroke="rgba(168, 85, 247, 0.15)" stroke-width="0.75" stroke-dasharray="4,4" />
+    <line x1="340" y1="0" x2="340" y2="500" stroke="rgba(0, 255, 136, 0.15)" stroke-width="0.75" stroke-dasharray="4,4" />
+    <line x1="480" y1="0" x2="480" y2="500" stroke="rgba(168, 85, 247, 0.15)" stroke-width="0.75" stroke-dasharray="4,4" />
+
+    <!-- Bathymetric Water Contours (Severn Sound & Georgian Bay inlets) -->
+    <!-- Water Body 1: Main Severn Sound / North Bay -->
+    <path 
+      d="M 50,0 Q 120,40 180,60 T 320,50 T 450,20 T 600,60 L 600,0 Z" 
+      fill="url(#huronia-water)" 
+      stroke="rgba(0, 255, 136, 0.3)" 
+      stroke-width="1"
+    />
+
+    <!-- Penetanguishene Harbour Fjord Inlet -->
+    <path 
+      d="M 120,60 Q 130,120 140,160 Q 150,210 160,250 Q 170,270 175,280 Q 165,285 155,270 Q 140,240 130,190 Q 115,130 95,70 Z" 
+      fill="rgba(168, 85, 247, 0.2)" 
+      stroke="#a855f7" 
+      stroke-width="1.2"
+    />
+
+    <!-- Midland Bay & Basin Inlet -->
+    <path 
+      d="M 270,55 Q 285,110 300,160 Q 315,220 330,280 Q 340,320 355,340 Q 370,350 380,335 Q 375,300 365,240 Q 355,180 340,110 Q 330,60 320,50 Z" 
+      fill="rgba(0, 255, 136, 0.2)" 
+      stroke="#00ff88" 
+      stroke-width="1.2"
+    />
+
+    <!-- Hog Bay / Sturgeon Bay (Tay Township inlets) -->
+    <path 
+      d="M 430,25 Q 445,80 460,140 Q 475,200 490,260 Q 500,310 515,350 Q 525,355 530,340 Q 525,280 515,200 Q 505,120 495,50 Z" 
+      fill="rgba(168, 85, 247, 0.15)" 
+      stroke="#a855f7" 
+      stroke-width="1"
+    />
+
+    <!-- Topographic contour rings around Huronia highlands -->
+    <ellipse cx="230" cy="380" rx="90" ry="50" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-width="0.75" />
+    <ellipse cx="230" cy="380" rx="60" ry="32" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-width="0.75" stroke-dasharray="2,2" />
+    <ellipse cx="230" cy="380" rx="30" ry="16" fill="none" stroke="rgba(0, 255, 136, 0.15)" stroke-width="0.75" />
+
+    <!-- Tay Township contour ridges -->
+    <ellipse cx="440" cy="400" rx="75" ry="40" fill="none" stroke="rgba(255, 255, 255, 0.07)" stroke-width="0.75" />
+    <ellipse cx="440" cy="400" rx="45" ry="24" fill="none" stroke="rgba(168, 85, 247, 0.15)" stroke-width="0.75" />
+
+    <!-- Coastal Road / Trail Arteries (County Rd 93, Hwy 12) -->
+    <path d="M 175,280 L 230,340 L 330,320 L 400,350 L 520,380" fill="none" stroke="url(#huronia-glow-line)" stroke-width="1.2" stroke-dasharray="3,3" />
+    <path d="M 330,320 L 350,480" fill="none" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1" />
+
+    <!-- Regional Anchor Markers & Labels -->
+
+    <!-- 1. Midland (Primary Core) -->
+    <g transform="translate(340, 310)">
+      <circle cx="0" cy="0" r="4" fill="#00ff88" />
+      <circle cx="0" cy="0" r="8" fill="none" stroke="#00ff88" stroke-width="0.75" stroke-dasharray="2,2" />
+      <line x1="-12" y1="0" x2="12" y2="0" stroke="#00ff88" stroke-width="0.75" />
+      <line x1="0" y1="-12" x2="0" y2="12" stroke="#00ff88" stroke-width="0.75" />
+      <text x="14" y="4" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="600" fill="#00ff88" letter-spacing="1">MIDLAND</text>
+      <text x="14" y="16" font-family="'JetBrains Mono', monospace" font-size="8" fill="#a1a1aa" letter-spacing="0.5">44.75°N 79.88°W</text>
+    </g>
+
+    <!-- 2. Penetanguishene (Penetang) -->
+    <g transform="translate(175, 255)">
+      <circle cx="0" cy="0" r="3" fill="#a855f7" />
+      <circle cx="0" cy="0" r="6" fill="none" stroke="#a855f7" stroke-width="0.75" />
+      <text x="-12" y="-10" text-anchor="end" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#c084fc" letter-spacing="1">PENETANG</text>
+      <text x="-12" y="1" text-anchor="end" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#71717a">PENETANGUISHENE</text>
+    </g>
+
+    <!-- 3. Tay Township -->
+    <g transform="translate(480, 320)">
+      <circle cx="0" cy="0" r="3" fill="#00ff88" />
+      <circle cx="0" cy="0" r="6" fill="none" stroke="#00ff88" stroke-width="0.75" />
+      <text x="12" y="3" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#00ff88" letter-spacing="1">TAY TOWNSHIP</text>
+      <text x="12" y="14" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#71717a">PORT MCNICOLL / VICTORIA HBR</text>
+    </g>
+
+    <!-- 4. Tiny Township (Northwest) -->
+    <g transform="translate(90, 160)">
+      <text x="0" y="0" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="500" fill="#a855f7" letter-spacing="2">TINY TOWNSHIP</text>
+      <text x="0" y="11" font-family="'JetBrains Mono', monospace" font-size="7" fill="#71717a">AWENDA SHORELINE</text>
+    </g>
+
+    <!-- 5. Wye Marsh (Southeast of Midland) -->
+    <g transform="translate(370, 390)">
+      <rect x="-2" y="-2" width="4" height="4" fill="#a855f7" />
+      <text x="10" y="2" font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#c084fc" letter-spacing="0.8">WYE MARSH</text>
+      <text x="10" y="12" font-family="'JetBrains Mono', monospace" font-size="7" fill="#52525b">WETLANDS ECOLOGY</text>
+    </g>
+
+    <!-- 6. Water Body Labels -->
+    <text x="320" y="35" font-family="'JetBrains Mono', monospace" font-size="9" fill="#00ff88" letter-spacing="3" opacity="0.6">SEVERN SOUND // GEORGIAN BAY</text>
+    <text x="110" y="210" font-family="'JetBrains Mono', monospace" font-size="7" fill="#a855f7" letter-spacing="1.5" transform="rotate(-65 110,210)">PENETANG HARBOUR</text>
+    <text x="300" y="200" font-family="'JetBrains Mono', monospace" font-size="7" fill="#00ff88" letter-spacing="1.5" transform="rotate(-65 300,200)">MIDLAND BAY</text>
+
+    <!-- Nautical Depth Soundings -->
+    <text x="210" y="100" font-family="'JetBrains Mono', monospace" font-size="7" fill="#52525b">18m</text>
+    <text x="260" y="85" font-family="'JetBrains Mono', monospace" font-size="7" fill="#52525b">24m</text>
+    <text x="380" y="90" font-family="'JetBrains Mono', monospace" font-size="7" fill="#52525b">31m</text>
+    <text x="450" y="130" font-family="'JetBrains Mono', monospace" font-size="7" fill="#52525b">14m</text>
+
+    <!-- Cartographic Compass Rose in Corner -->
+    <g transform="translate(540, 70)" opacity="0.4">
+      <circle cx="0" cy="0" r="20" fill="none" stroke="rgba(255, 255, 255, 0.2)" stroke-width="0.75" />
+      <polygon points="0,-18 3,-4 0,0 -3,-4" fill="#00ff88" />
+      <polygon points="0,18 3,4 0,0 -3,4" fill="#a855f7" />
+      <polygon points="18,0 4,3 0,0 4,-3" fill="rgba(255, 255, 255, 0.4)" />
+      <polygon points="-18,0 -4,3 0,0 -4,-3" fill="rgba(255, 255, 255, 0.4)" />
+      <text x="0" y="-22" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="7" fill="#00ff88">N</text>
+    </g>
+
+    <!-- Map Scale & Region Identifier -->
+    <g transform="translate(30, 460)" opacity="0.5">
+      <line x1="0" y1="0" x2="60" y2="0" stroke="#00ff88" stroke-width="1" />
+      <line x1="0" y1="-3" x2="0" y2="3" stroke="#00ff88" stroke-width="1" />
+      <line x1="60" y1="-3" x2="60" y2="3" stroke="#00ff88" stroke-width="1" />
+      <text x="0" y="12" font-family="'JetBrains Mono', monospace" font-size="7" fill="#a1a1aa">HURONIA SURVEY 1:50,000</text>
+    </g>
+  </svg>
+</div>

@@ -2,23 +2,93 @@
 import { getCollection, getEntry } from 'astro:content';
 import { getBunnyGalleries } from '../lib/bunny';
 import settings from '../content/settings/general.json';
+import DynamicAperture from '../components/DynamicAperture.astro';
+import HuroniaMapBackground from '../components/HuroniaMapBackground.astro';
+import StatusBar from '../components/StatusBar.astro';
 import '../styles/global.css';
 
-// 1. Fetch Bunny Collections & Pick Exactly ONE Random Image per Gallery
-const collections = await getBunnyGalleries();
+// 1. Fetch Local Photos & Bunny Galleries
+const localPhotos = await getCollection('photos');
+const bunnyCollections = await getBunnyGalleries();
 
-const singleRandomFromEachGallery = collections
-  .map((col) => {
-    if (!col.images || col.images.length === 0) return null;
-    const randomImg = col.images[Math.floor(Math.random() * col.images.length)];
+// Canonical galleries collection (identical to /galleries/ catalog)
+let allCollections = [...bunnyCollections];
+
+if (allCollections.length === 0 && localPhotos.length > 0) {
+  const categories = [...new Set(localPhotos.map((p) => p.data.category))];
+  for (const cat of categories) {
+    const catPhotos = localPhotos.filter((p) => p.data.category === cat);
+    allCollections.push({
+      folder: cat.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      title: cat,
+      images: catPhotos.map((p) => ({
+        name: p.data.title,
+        url: p.data.image,
+      })),
+    });
+  }
+}
+
+// ONLY use images from the galleries in the randomized frame engine (excluding 'posters' gallery)
+const randomizedEnginePhotos = allCollections
+  .filter((col) => {
+    const folderKey = (col.folder || '').toLowerCase().trim();
+    const titleKey = (col.title || '').toLowerCase().trim();
+    return folderKey !== 'posters' && folderKey !== 'poster' && titleKey !== 'posters' && titleKey !== 'poster';
+  })
+  .flatMap((col) =>
+    col.images
+      .filter((img) => {
+        const urlLower = (img.url || '').toLowerCase();
+        return !urlLower.includes('/posters/');
+      })
+      .map((img, i) => {
+        const matchedPhoto = localPhotos.find((p) => p.data.image === img.url || p.data.title === img.name);
+        return {
+          id: `${col.folder}-${i}`,
+          title: img.name,
+          year: matchedPhoto?.data.year || 2026,
+          image: img.url,
+          category: col.title,
+          flavor: matchedPhoto?.data.flavor || `${img.name} — Curated study from the ${col.title} gallery archive`,
+          description: matchedPhoto?.body?.trim() || `Captured in ${col.title} gallery archive.`,
+        };
+      })
+  );
+
+// For the lower masonry archive, combine all available photography
+const allGalleryItems = allCollections.flatMap((col) =>
+  col.images.map((img, i) => {
+    const matchedPhoto = localPhotos.find((p) => p.data.image === img.url || p.data.title === img.name);
     return {
-      ...randomImg,
-      collectionTitle: col.title,
-      collectionFolder: col.folder,
+      id: `${col.folder}-${i}`,
+      title: img.name,
+      year: matchedPhoto?.data.year || 2026,
+      image: img.url,
+      category: col.title,
+      flavor: matchedPhoto?.data.flavor || `${img.name} — Curated study from the ${col.title} gallery archive`,
+      description: matchedPhoto?.body?.trim() || `Captured in ${col.title} gallery archive.`,
     };
   })
-  .filter((item): item is NonNullable<typeof item> => item !== null)
-  .sort(() => 0.5 - Math.random()); // Shuffle gallery order
+);
+
+const allPhotoItems = [
+  ...allGalleryItems,
+  ...localPhotos
+    .filter((p) => !allGalleryItems.some((re) => re.image === p.data.image))
+    .map((p) => ({
+      id: p.id,
+      title: p.data.title,
+      year: p.data.year,
+      image: p.data.image,
+      category: p.data.category,
+      flavor: p.data.flavor || p.body?.trim() || `${p.data.title} — ${p.data.category} capture (${p.data.year})`,
+      description: p.body,
+    })),
+];
+
+// Shuffle masonry items for variety on load
+const masonryPhotos = [...allPhotoItems].sort(() => 0.5 - Math.random());
 
 // 2. Fetch About Entry
 const aboutEntry = await getEntry('pages', 'about');
@@ -51,218 +121,296 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
 ---
 
 <!DOCTYPE html>
-<html lang="en" class="bg-stone-950 text-stone-100 antialiased selection:bg-stone-800">
+<html lang="en" class="bg-[#07080a] text-zinc-100 antialiased selection:bg-purple-900/60 selection:text-[#00ff88]">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{settings.siteTitle || "Nate Lacroix"} — {settings.tagline || "Media Artist"}</title>
+  <title>{settings.siteTitle || "Nate Lacroix"} — Atmospheric Media &amp; Moving Image</title>
 </head>
-<body class="min-h-screen flex flex-col justify-between font-sans selection:bg-stone-800">
+<body class="min-h-screen flex flex-col justify-between font-sans pb-14">
 
-  <!-- Header -->
-  <header class="border-b border-stone-800/80 sticky top-0 bg-stone-950/90 backdrop-blur-md z-30">
-    <div class="max-w-6xl mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div>
-        <a href="/" class="text-xl font-light tracking-tight text-white block">
-          {settings.logo ? (
-            <img src={settings.logo} alt={settings.siteTitle} class="h-8 w-auto object-contain" />
-          ) : (
-            settings.siteTitle || "Nate Lacroix"
-          )}
+  <!-- Top Navigation (3-Zone Top Bar Contract with Neon Green & Purple Highlights) -->
+  <header class="sticky top-0 bg-[#090b0f]/95 backdrop-blur-md border-b border-zinc-800/80 z-30">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-8">
+      <!-- Zone 1: Single Brand Wordmark -->
+      <a 
+        href="/" 
+        class="text-lg font-medium tracking-tight text-white hover:text-[#00ff88] transition-colors uppercase whitespace-nowrap shrink-0 flex items-center gap-2"
+        data-flavor="STUDIO // Nate Lacroix — Midland, Ontario media production, cinema directing & photography"
+      >
+        <span class="w-2.5 h-2.5 bg-[#00ff88] transform rotate-45 inline-block shadow-[0_0_8px_rgba(0,255,136,0.6)]"></span>
+        <span>{settings.siteTitle || "Nate Lacroix"}</span>
+      </a>
+
+      <!-- Zone 2: 4-5 Concise Single-Line Navigation Links -->
+      <nav class="hidden md:flex items-center gap-8 text-xs font-mono uppercase tracking-widest text-zinc-400">
+        <a 
+          href="/" 
+          class="text-white border-b-2 border-[#00ff88] pb-0.5 whitespace-nowrap shrink-0"
+          data-flavor="WORK // Curated index of motion sequences, photography, and film studies"
+        >
+          Work
         </a>
-        <span class="text-[10px] uppercase tracking-[0.25em] text-stone-500">
-          {settings.tagline || "Photography • Moving Image"}
-        </span>
-      </div>
-      <nav class="flex items-center gap-5 sm:gap-6 text-xs uppercase tracking-widest font-medium">
-        <a href="/" class="text-white border-b border-white pb-0.5">Work</a>
-        <a href="/galleries/" class="text-stone-400 hover:text-white transition-colors">Galleries</a>
-        <a href="/video-projects/" class="text-stone-400 hover:text-white transition-colors">Video Projects</a>
-        <a href="/about/" class="text-stone-400 hover:text-white transition-colors">About</a>
-        <a href="/contact/" class="text-stone-400 hover:text-white transition-colors">Contact</a>
+        <a 
+          href="/galleries/" 
+          class="hover:text-[#c084fc] transition-colors whitespace-nowrap shrink-0"
+          data-flavor="GALLERIES // Curated location series and continuous photo archives"
+        >
+          Galleries
+        </a>
+        <a 
+          href="/video-projects/" 
+          class="hover:text-[#c084fc] transition-colors whitespace-nowrap shrink-0"
+          data-flavor="VIDEO PROJECTS // Directorial music videos, short films, and editorial reels"
+        >
+          Video Projects
+        </a>
+        <a 
+          href="/about/" 
+          class="hover:text-[#c084fc] transition-colors whitespace-nowrap shrink-0"
+          data-flavor="ABOUT // Profile, artist statement, and directorial background"
+        >
+          About
+        </a>
       </nav>
+
+      <!-- Zone 3: 1 Primary Action Control (Angular Metallic Button with Neon Green Accent) -->
+      <div class="flex items-center gap-3 shrink-0">
+        <a 
+          href="/contact/" 
+          class="btn-steel chamfer-btn px-4 py-2 text-xs font-mono uppercase tracking-wider whitespace-nowrap shrink-0 inline-flex items-center gap-2 hover:border-[#00ff88]"
+          data-flavor="INQUIRIES // Direct electronic mail and commercial production dispatch"
+        >
+          <span>Direct Inquiries</span>
+          <span class="text-[#00ff88]">&rarr;</span>
+        </a>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-6 py-8 flex-grow w-full space-y-12">
+  <main class="max-w-7xl mx-auto px-6 py-10 flex-grow w-full space-y-16">
 
-    <!-- UPPER STAGE: Context & Video Feature -->
-    <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch pt-2">
+    <!-- UPPER STAGE: Dark Metallic Context & Featured Motion Project Split -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
       
-      <!-- Left Column: Artist Context -->
-      <div class="lg:col-span-5 flex flex-col justify-between bg-stone-900/30 border border-stone-800/80 p-6 sm:p-8">
-        <div class="space-y-4">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-mono uppercase tracking-[0.25em] text-stone-500">Artist Focus</span>
-            <span class="text-[10px] font-mono text-stone-600">44.75° N, 79.88° W</span>
+      <!-- Left Column: Artist Focus Panel with Faded Huronia Map Background (Midland, Penetang, Tay) -->
+      <div 
+        class="lg:col-span-5 flex flex-col justify-between metallic-panel tech-corner border border-zinc-700/80 p-6 sm:p-8 relative overflow-hidden"
+        data-flavor="FOCUS // Atmospheric texture, pacing, and visual resonance captured in Midland, Ontario"
+      >
+        <!-- Faded Map of Huronia Region (Midland, Penetang, Tay, Severn Sound) -->
+        <HuroniaMapBackground />
+
+        <!-- Foreground Content Layer -->
+        <div class="space-y-5 relative z-20">
+          <div class="flex items-center justify-between text-[11px] font-mono">
+            <div class="flex items-center gap-2">
+              <span class="text-[#00ff88]">■</span>
+              <span class="text-[#00ff88] uppercase tracking-widest font-semibold">Artist Focus</span>
+            </div>
+            <span class="text-purple-300 font-mono tabular-nums tracking-wider bg-black/60 px-2 py-0.5 border border-purple-500/30">
+              HURONIA · 44.75° N, 79.88° W
+            </span>
           </div>
 
           <h1 class="text-2xl sm:text-3xl font-light tracking-tight text-white leading-snug">
             "{bioSnippet}"
           </h1>
 
-          <p class="text-xs text-stone-400 font-light leading-relaxed pt-2">
-            Independent media production, atmospheric photography archives, and directorial motion sequences based in Midland, Ontario.
+          <p class="text-xs text-zinc-300 font-light leading-relaxed pt-1">
+            Directorial moving images, harsh natural textures, and atmospheric cinema archives documented across Midland, Penetanguishene, Tay Township, and Georgian Bay.
           </p>
         </div>
 
-        <div class="pt-6 mt-6 border-t border-stone-800/80 flex items-center justify-between text-xs font-mono">
-          <a href="/about/" class="text-stone-300 hover:text-white uppercase tracking-widest text-[11px] transition-colors">
-            Read Bio &rarr;
+        <div class="pt-6 mt-6 border-t border-zinc-800/90 flex items-center justify-between text-xs font-mono relative z-20">
+          <a 
+            href="/about/" 
+            class="text-zinc-200 hover:text-[#00ff88] uppercase tracking-widest text-[11px] transition-colors flex items-center gap-1.5"
+            data-flavor="BIOGRAPHY // Read background dossier and directorial statement"
+          >
+            <span>Read Profile</span>
+            <span class="text-[#00ff88]">&rarr;</span>
           </a>
-          <a href="/contact/" class="text-stone-400 hover:text-stone-200 uppercase tracking-widest text-[11px] transition-colors">
-            Inquiries &rarr;
+          <span class="text-zinc-600">/</span>
+          <a 
+            href="/contact/" 
+            class="text-purple-300 hover:text-white uppercase tracking-widest text-[11px] transition-colors"
+            data-flavor="MIDLAND STUDIO // 44.75° N, 79.88° W · Direct studio inquiries"
+          >
+            Midland Studio
           </a>
         </div>
       </div>
 
-      <!-- Right Column: "Have you seen this one yet?" Video Card -->
-      <div class="lg:col-span-7 bg-stone-900/30 border border-stone-800/80 p-6 sm:p-8 flex flex-col justify-between">
+      <!-- Right Column: Featured Video Spotlight (Brushed Metallic Chassis with Purple & Green Accents) -->
+      <div class="lg:col-span-7 metallic-panel tech-corner border border-zinc-700/80 p-6 sm:p-8 flex flex-col justify-between">
         {featuredVideo ? (
           <>
             <div class="flex items-center justify-between mb-4">
-              <div class="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] text-stone-400">
-                <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                <span>Have you seen this one yet?</span>
+              <div class="inline-flex items-center gap-2.5 text-[11px] font-mono uppercase tracking-[0.2em] text-zinc-300">
+                <span class="w-2 h-2 bg-purple-500 rounded-none transform rotate-45 shadow-[0_0_8px_rgba(168,85,247,0.7)]"></span>
+                <span>Featured Motion Sequence</span>
               </div>
-              <a href="/video-projects/" class="text-[10px] font-mono uppercase tracking-widest text-stone-500 hover:text-stone-300">
+              <a 
+                href="/video-projects/" 
+                class="text-[11px] font-mono uppercase tracking-widest text-purple-400 hover:text-[#00ff88] transition-colors"
+                data-flavor={`ARCHIVE CATALOG // Browse all ${allVideos.length} published motion projects`}
+              >
                 All Projects ({allVideos.length}) &rarr;
               </a>
             </div>
 
-            <!-- Video Thumbnail Stage -->
+            <!-- Video Thumbnail Stage with Dark Metallic Bezel -->
             <button
               type="button"
-              class="aspect-video w-full bg-stone-950 border border-stone-800 overflow-hidden relative group block cursor-pointer text-left"
+              class="aspect-video w-full bg-black border border-zinc-800 overflow-hidden relative group block cursor-pointer text-left"
               data-open-spotlight
+              data-flavor={featuredVideo.data.flavor || `${featuredVideo.data.title} (${featuredVideo.data.year}) — ${featuredVideo.data.role} ${featuredVideo.data.client ? `• Client: ${featuredVideo.data.client}` : ''}`}
             >
               <img 
                 src={featuredVideo.data.coverImage} 
                 alt={featuredVideo.data.title}
                 class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
               />
-              <div class="absolute inset-0 bg-stone-950/40 group-hover:bg-stone-950/20 transition-colors flex items-center justify-center">
-                <div class="w-12 h-12 rounded-full bg-stone-950/80 backdrop-blur-md border border-stone-700 flex items-center justify-center group-hover:scale-110 group-hover:border-white transition-all">
-                  <span class="text-white text-xs pl-0.5">&#9658;</span>
+              <div class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                <div class="w-14 h-14 bg-zinc-900/90 backdrop-blur-md border border-zinc-600/80 flex items-center justify-center group-hover:scale-110 group-hover:border-[#00ff88] transition-all shadow-xl">
+                  <span class="text-[#00ff88] text-xs pl-0.5">&#9658;</span>
                 </div>
               </div>
             </button>
 
             <!-- Video Meta Footer -->
-            <div class="mt-4 pt-3 border-t border-stone-800/80 flex items-center justify-between">
+            <div class="mt-4 pt-3 border-t border-zinc-800/80 flex items-center justify-between">
               <div>
-                <h2 class="text-base font-light text-white tracking-tight">{featuredVideo.data.title}</h2>
-                <span class="text-[10px] font-mono uppercase tracking-wider text-stone-500">
-                  {featuredVideo.data.category} &bull; {featuredVideo.data.year} {featuredVideo.data.client ? `• ${featuredVideo.data.client}` : ''}
-                </span>
+                <h2 class="text-base font-medium text-white tracking-tight">{featuredVideo.data.title}</h2>
+                <div class="flex items-center gap-2 text-[11px] font-mono text-zinc-400 mt-0.5">
+                  <span class="text-purple-400">{featuredVideo.data.category}</span>
+                  <span>·</span>
+                  <span class="tabular-nums">{featuredVideo.data.year}</span>
+                  {featuredVideo.data.client && (
+                    <>
+                      <span>·</span>
+                      <span class="text-zinc-300">{featuredVideo.data.client}</span>
+                    </>
+                  )}
+                </div>
               </div>
               <button 
                 type="button" 
-                class="text-[10px] uppercase font-mono tracking-widest border border-stone-700 px-3 py-1 text-stone-300 hover:text-white hover:border-stone-500 transition-colors cursor-pointer"
+                class="btn-steel chamfer-btn px-4 py-2 text-[11px] font-mono uppercase tracking-widest cursor-pointer hover:border-[#00ff88]"
                 data-open-spotlight
+                data-flavor={`PLAY // Screen ${featuredVideo.data.title} in the cinema lightbox modal`}
               >
-                Watch Now
+                Watch Reel
               </button>
             </div>
           </>
         ) : (
-          <div class="h-full flex items-center justify-center py-12 text-stone-500 font-mono text-xs">
-            No archive projects found. Add one in /admin/.
+          <div class="h-full flex items-center justify-center py-12 text-zinc-500 font-mono text-xs">
+            No video projects found in archive.
           </div>
         )}
       </div>
 
     </section>
 
-    <!-- LOWER STAGE: Natural Masonry Gallery Sampling (1 Image Per Bunny Gallery) -->
+    <!-- DYNAMIC ELEMENT: KINETIC GALLERY APERTURE ENGINE (Strictly Using Gallery Images) -->
+    <section class="space-y-6">
+      <DynamicAperture photos={randomizedEnginePhotos} />
+    </section>
+
+    <!-- LOWER STAGE: Natural Masonry Gallery of Atmospheric Frames -->
     <section class="space-y-6 pt-4">
-      <div class="flex items-baseline justify-between border-b border-stone-800/80 pb-3">
+      <div class="flex items-baseline justify-between border-b border-zinc-800/80 pb-4">
         <div>
-          <span class="text-[10px] font-mono uppercase tracking-[0.25em] text-stone-500 block">Cross-Gallery Sampler</span>
-          <h2 class="text-xl font-light tracking-tight text-white">Atmospheric Frames</h2>
+          <div class="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500">
+            <span class="text-[#00ff88]">■</span>
+            <span>Archive Index</span>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-light tracking-tight text-white mt-1">
+            Atmospheric Stills &amp; Studies
+          </h2>
         </div>
-        <div class="flex items-center gap-4">
-          <button 
-            type="button" 
-            onclick="window.location.reload()" 
-            class="text-[10px] font-mono uppercase tracking-widest text-stone-500 hover:text-stone-300 transition-colors cursor-pointer"
-            title="Pick a new frame from each gallery"
+        <div class="flex items-center gap-4 text-xs font-mono">
+          <a 
+            href="/galleries/" 
+            class="text-purple-400 hover:text-[#00ff88] uppercase tracking-widest transition-colors"
+            data-flavor="ALL GALLERIES // View complete curated series archives and location albums"
           >
-            [Re-Sample]
-          </button>
-          <a href="/galleries/" class="text-xs font-mono uppercase tracking-widest text-stone-400 hover:text-white transition-colors">
-            All Galleries &rarr;
+            All Galleries ({bunnyCollections.length > 0 ? bunnyCollections.length : 'Curated'}) &rarr;
           </a>
         </div>
       </div>
 
-      <!-- Natural Proportions Masonry -->
-      {singleRandomFromEachGallery.length === 0 ? (
-        <div class="py-16 text-center text-stone-600 font-mono text-xs">
-          No gallery images available to sample. Upload folders to Bunny Storage under /galleries/.
-        </div>
-      ) : (
-        <div class="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-          {singleRandomFromEachGallery.map((img, idx) => {
-            const modalId = `home-masonry-modal-${idx}`;
-            return (
-              <article class="break-inside-avoid bg-stone-900/40 border border-stone-800/80 p-2 group flex flex-col overflow-hidden">
-                <button
-                  type="button"
-                  class="w-full bg-stone-950 overflow-hidden relative cursor-zoom-in block text-left"
-                  onclick={`document.getElementById('${modalId}').showModal()`}
-                >
-                  <img 
-                    src={img.url} 
-                    alt={img.name}
-                    class="w-full h-auto object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
-                    loading="lazy"
-                  />
-                  <div class="absolute inset-0 bg-stone-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span class="text-[10px] uppercase tracking-widest bg-stone-950/80 text-white px-2.5 py-1 border border-stone-700">Enlarge</span>
-                  </div>
-                </button>
-
-                <div class="pt-2.5 px-1 flex justify-between items-baseline">
-                  <span class="text-xs font-mono text-stone-300 capitalize truncate pr-2">{img.name}</span>
-                  <a 
-                    href={`/galleries/${img.collectionFolder}/`}
-                    class="text-[10px] font-mono uppercase tracking-wider text-stone-500 hover:text-stone-300 whitespace-nowrap transition-colors"
-                  >
-                    {img.collectionTitle} &rarr;
-                  </a>
+      <!-- Natural Proportions Masonry Grid with Dark Metallic Cards and data-flavor -->
+      <div class="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
+        {masonryPhotos.map((img, idx) => {
+          const modalId = `home-masonry-modal-${idx}`;
+          const flavorText = img.flavor || `${img.title} — ${img.category} (${img.year})`;
+          return (
+            <article 
+              class="break-inside-avoid metallic-panel tech-corner border border-zinc-800/90 p-2.5 group flex flex-col overflow-hidden transition-all duration-200 hover:border-purple-500"
+              data-flavor={flavorText}
+            >
+              <button
+                type="button"
+                class="w-full bg-black overflow-hidden relative cursor-zoom-in block text-left"
+                onclick={`document.getElementById('${modalId}').showModal()`}
+              >
+                <img 
+                  src={img.image} 
+                  alt={img.title}
+                  class="w-full h-auto object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                  loading="lazy" 
+                />
+                <div class="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <span class="text-[10px] uppercase font-mono tracking-widest bg-zinc-950/90 text-white px-3 py-1.5 border border-[#00ff88]/50 chamfer-btn">
+                    Inspect Frame
+                  </span>
                 </div>
+              </button>
 
-                <!-- Lightbox Modal -->
-                <dialog 
-                  id={modalId}
-                  class="m-auto p-0 rounded-xs backdrop:bg-stone-950/85 bg-stone-900 text-stone-100 max-w-5xl w-[94vw] max-h-[92vh] overflow-y-auto shadow-2xl border border-stone-800"
-                >
-                  <div class="p-6 sm:p-8 relative">
-                    <button 
-                      type="button"
-                      class="absolute top-4 right-4 text-stone-400 hover:text-white text-3xl font-light cursor-pointer leading-none p-2 z-10"
-                      onclick={`document.getElementById('${modalId}').close()`}
-                      aria-label="Close"
-                    >
-                      &times;
-                    </button>
-                    <div class="bg-black/50 flex items-center justify-center max-h-[75vh] overflow-hidden mb-4">
-                      <img src={img.url} alt={img.name} class="max-h-[75vh] w-auto mx-auto object-contain" />
-                    </div>
-                    <div class="border-t border-stone-800 pt-3 flex justify-between items-center text-xs font-mono text-stone-400">
-                      <span class="capitalize text-stone-200">{img.name}</span>
-                      <a href={`/galleries/${img.collectionFolder}/`} class="text-[10px] uppercase tracking-widest text-stone-500 hover:text-white">
-                        Collection: {img.collectionTitle} &rarr;
-                      </a>
-                    </div>
+              <div class="pt-3 px-1.5 flex justify-between items-baseline">
+                <div>
+                  <span class="text-xs font-mono text-zinc-200 capitalize truncate block">{img.title}</span>
+                  <span class="text-[10px] font-mono text-purple-400 uppercase tracking-wider">{img.category}</span>
+                </div>
+                <span class="text-[10px] font-mono text-zinc-400 tabular-nums">
+                  {img.year}
+                </span>
+              </div>
+
+              <!-- High-Res Lightbox Modal -->
+              <dialog 
+                id={modalId}
+                class="m-auto p-0 rounded-none backdrop:bg-black/90 bg-zinc-950 text-zinc-100 max-w-5xl w-[94vw] max-h-[92vh] overflow-y-auto shadow-2xl border border-zinc-700"
+              >
+                <div class="p-6 sm:p-8 relative">
+                  <button 
+                    type="button"
+                    class="absolute top-4 right-4 text-zinc-400 hover:text-[#00ff88] text-3xl font-light cursor-pointer leading-none p-2 z-10 transition-colors"
+                    onclick={`document.getElementById('${modalId}').close()`}
+                    aria-label="Close"
+                  >
+                    &times;
+                  </button>
+                  <div class="bg-black/80 flex items-center justify-center max-h-[75vh] overflow-hidden mb-4 border border-zinc-800">
+                    <img src={img.image} alt={img.title} class="max-h-[75vh] w-auto mx-auto object-contain" />
                   </div>
-                </dialog>
-              </article>
-            );
-          })}
-        </div>
-      )}
+                  <div class="border-t border-zinc-800 pt-3 flex justify-between items-center text-xs font-mono text-zinc-400">
+                    <div>
+                      <span class="text-zinc-200 font-medium">{img.title}</span>
+                      <span class="text-zinc-600 mx-2">·</span>
+                      <span class="text-purple-300">{img.category}</span>
+                    </div>
+                    <span class="tabular-nums text-zinc-500">{img.year}</span>
+                  </div>
+                </div>
+              </dialog>
+            </article>
+          );
+        })}
+      </div>
     </section>
 
   </main>
@@ -271,16 +419,16 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
   {featuredVideo && (
     <dialog 
       id="spotlight-video-modal" 
-      class="m-auto p-0 rounded-xs backdrop:bg-stone-950/90 bg-stone-900 text-stone-100 max-w-5xl w-[94vw] max-h-[92vh] overflow-hidden shadow-2xl border border-stone-800"
+      class="m-auto p-0 rounded-none backdrop:bg-black/90 bg-zinc-950 text-zinc-100 max-w-5xl w-[94vw] max-h-[92vh] overflow-hidden shadow-2xl border border-zinc-700"
     >
       <div class="relative bg-black flex flex-col">
-        <div class="flex items-center justify-between p-4 bg-stone-950 border-b border-stone-800">
-          <span class="text-xs uppercase tracking-widest text-stone-400 truncate pr-4">
+        <div class="flex items-center justify-between p-4 bg-zinc-900 border-b border-zinc-800">
+          <span class="text-xs uppercase tracking-widest text-[#00ff88] font-mono truncate pr-4">
             {featuredVideo.data.title} ({featuredVideo.data.year})
           </span>
           <button 
             type="button"
-            class="text-stone-400 hover:text-white text-2xl font-light leading-none cursor-pointer px-2"
+            class="text-zinc-400 hover:text-white text-2xl font-light leading-none cursor-pointer px-2"
             onclick="document.getElementById('spotlight-video-modal').close()"
             aria-label="Close"
           >
@@ -290,7 +438,7 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
         <div class="aspect-video w-full bg-black flex items-center justify-center">
           {videoEmbed?.type === 'iframe' && (
             <iframe 
-              data-src={videoEmbed.src}
+              data-src={videoEmbed.src} 
               title={featuredVideo.data.title}
               class="w-full h-full border-0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -303,19 +451,30 @@ const videoEmbed = featuredVideo ? getEmbedUrl(featuredVideo.data.videoUrl) : nu
             </video>
           )}
           {!videoEmbed && (
-            <p class="text-stone-500 text-xs font-mono">No video URL linked to this entry.</p>
+            <p class="text-zinc-500 text-xs font-mono">No video URL linked to this entry.</p>
           )}
         </div>
       </div>
     </dialog>
   )}
 
-  <footer class="border-t border-stone-900 py-6 px-6 mt-12">
-    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] font-mono text-stone-500 uppercase tracking-widest">
-      <span>&copy; 2026 {settings.siteTitle || "Nate Lacroix"}. All rights reserved.</span>
-      <span>Midland, Ontario &bull; Bunny Storage CDN</span>
+  <!-- Footer with Dark Metallic Border -->
+  <footer class="border-t border-zinc-800/90 bg-[#08090d] py-8 px-6 mt-16 mb-6">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-mono text-zinc-500">
+      <div class="flex items-center gap-3">
+        <span class="w-2 h-2 bg-[#00ff88] transform rotate-45 inline-block"></span>
+        <span>&copy; 2026 {settings.siteTitle || "Nate Lacroix"}. All rights reserved.</span>
+      </div>
+      <div class="flex items-center gap-4 text-[11px] text-zinc-400 uppercase tracking-widest">
+        <span class="text-purple-300/80">Midland, Ontario</span>
+        <span>·</span>
+        <span>Studio Archive</span>
+      </div>
     </div>
   </footer>
+
+  <!-- Interactive Status Bar -->
+  <StatusBar defaultText="STANDBY // Hover over photo frames, video projects, or links to inspect" />
 
   <script>
     // Dialog outside click handlers

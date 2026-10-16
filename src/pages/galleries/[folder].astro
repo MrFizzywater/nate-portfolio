@@ -1,11 +1,32 @@
 ---
+import { getCollection } from 'astro:content';
 import { getBunnyGalleries } from '../../lib/bunny';
 import settings from '../../content/settings/general.json';
+import StatusBar from '../../components/StatusBar.astro';
 import '../../styles/global.css';
 
 export async function getStaticPaths() {
-  const collections = await getBunnyGalleries();
-  return collections.map((col) => ({
+  const localPhotos = await getCollection('photos');
+  const bunnyCollections = await getBunnyGalleries();
+
+  const allCollections = [...bunnyCollections];
+
+  if (allCollections.length === 0 && localPhotos.length > 0) {
+    const categories = [...new Set(localPhotos.map((p) => p.data.category))];
+    for (const cat of categories) {
+      const catPhotos = localPhotos.filter((p) => p.data.category === cat);
+      allCollections.push({
+        folder: cat.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        title: cat,
+        images: catPhotos.map((p) => ({
+          name: p.data.title,
+          url: p.data.image,
+        })),
+      });
+    }
+  }
+
+  return allCollections.map((col) => ({
     params: { folder: col.folder },
     props: { collection: col },
   }));
@@ -15,54 +36,101 @@ const { collection } = Astro.props;
 ---
 
 <!DOCTYPE html>
-<html lang="en" class="bg-stone-950 text-stone-100 antialiased selection:bg-stone-800">
+<html lang="en" class="bg-[#07080a] text-zinc-100 antialiased selection:bg-purple-900/60 selection:text-[#00ff88]">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{collection.title} — Galleries — {settings.siteTitle || "Nate Lacroix"}</title>
 </head>
-<body class="min-h-screen flex flex-col justify-between font-sans">
+<body class="min-h-screen flex flex-col justify-between font-sans pb-14">
 
-  <header class="border-b border-stone-800/80 sticky top-0 bg-stone-950/90 backdrop-blur-md z-30">
-    <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div>
-        <a href="/" class="text-xl font-light tracking-tight text-white block">
-          {settings.siteTitle || "Nate Lacroix"}
+  <!-- Top Navigation (3-Zone Top Bar Contract with Neon Green & Purple Highlights) -->
+  <header class="sticky top-0 bg-[#090b0f]/95 backdrop-blur-md border-b border-zinc-800/80 z-30">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-8">
+      <!-- Zone 1: Single Brand Wordmark -->
+      <a 
+        href="/" 
+        class="text-lg font-medium tracking-tight text-white hover:text-[#00ff88] transition-colors uppercase whitespace-nowrap shrink-0 flex items-center gap-2"
+        data-flavor="STUDIO // Nate Lacroix — Midland, Ontario media production, cinema directing & photography"
+      >
+        <span class="w-2.5 h-2.5 bg-[#00ff88] transform rotate-45 inline-block shadow-[0_0_8px_rgba(0,255,136,0.6)]"></span>
+        <span>{settings.siteTitle || "Nate Lacroix"}</span>
+      </a>
+
+      <!-- Zone 2: 4-5 Concise Single-Line Navigation Links -->
+      <nav class="hidden md:flex items-center gap-8 text-xs font-mono uppercase tracking-widest text-zinc-400">
+        <a 
+          href="/" 
+          class="hover:text-[#c084fc] transition-colors whitespace-nowrap shrink-0"
+          data-flavor="WORK // Curated index of motion sequences, photography, and film studies"
+        >
+          Work
         </a>
-        <span class="text-[10px] uppercase tracking-[0.25em] text-stone-500">
-          {collection.title}
-        </span>
-      </div>
-      <nav class="flex items-center gap-5 sm:gap-6 text-xs uppercase tracking-widest font-medium">
-        <a href="/" class="text-stone-400 hover:text-white transition-colors">Work</a>
-        <a href="/galleries/" class="text-white border-b border-white pb-0.5">Galleries</a>
-        <a href="/video-projects/" class="text-stone-400 hover:text-white transition-colors">Video Projects</a>
-        <a href="/about/" class="text-stone-400 hover:text-white transition-colors">About</a>
-        <a href="/contact/" class="text-stone-400 hover:text-white transition-colors">Contact</a>
+        <a 
+          href="/galleries/" 
+          class="text-white border-b-2 border-[#00ff88] pb-0.5 whitespace-nowrap shrink-0"
+          data-flavor="GALLERIES // Curated location series and continuous photo archives"
+        >
+          Galleries
+        </a>
+        <a 
+          href="/video-projects/" 
+          class="hover:text-[#c084fc] transition-colors whitespace-nowrap shrink-0"
+          data-flavor="VIDEO PROJECTS // Directorial music videos, short films, and editorial reels"
+        >
+          Video Projects
+        </a>
+        <a 
+          href="/about/" 
+          class="hover:text-[#c084fc] transition-colors whitespace-nowrap shrink-0"
+          data-flavor="ABOUT // Profile, artist statement, and directorial background"
+        >
+          About
+        </a>
       </nav>
+
+      <!-- Zone 3: 1 Primary Action Control (Angular Metallic Button) -->
+      <div class="flex items-center gap-3 shrink-0">
+        <a 
+          href="/contact/" 
+          class="btn-steel chamfer-btn px-4 py-2 text-xs font-mono uppercase tracking-wider whitespace-nowrap shrink-0 inline-flex items-center gap-2 hover:border-[#00ff88]"
+          data-flavor="INQUIRIES // Direct electronic mail and commercial production dispatch"
+        >
+          <span>Direct Inquiries</span>
+          <span class="text-[#00ff88]">&rarr;</span>
+        </a>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-6 py-12 flex-grow w-full">
-    <div class="mb-8 flex items-baseline justify-between border-b border-stone-800/80 pb-4">
+  <main class="max-w-7xl mx-auto px-6 py-12 flex-grow w-full space-y-8">
+    <div class="border-b border-zinc-800/80 pb-6 flex items-baseline justify-between gap-4">
       <div>
-        <a href="/galleries/" class="text-[11px] font-mono text-stone-500 hover:text-stone-300 transition-colors uppercase tracking-widest block mb-2">
+        <a 
+          href="/galleries/" 
+          class="text-xs font-mono text-purple-300 hover:text-[#00ff88] transition-colors uppercase tracking-widest block mb-2"
+          data-flavor="NAVIGATE // Return to primary galleries catalog"
+        >
           &larr; Back to all galleries
         </a>
-        <h1 class="text-3xl font-light tracking-tight text-white">{collection.title}</h1>
+        <h1 class="text-3xl sm:text-4xl font-light tracking-tight text-white">{collection.title}</h1>
       </div>
-      <span class="text-xs font-mono text-stone-500">{collection.images.length} frames</span>
+      <span class="text-xs font-mono text-[#00ff88] tabular-nums font-semibold">{collection.images.length} FRAMES</span>
     </div>
 
-    <!-- Masonry Grid for this single collection -->
+    <!-- Masonry Grid with Angular Metallic Cards and data-flavor -->
     <div class="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
       {collection.images.map((img, imgIdx) => {
         const modalId = `modal-${imgIdx}`;
+        const frameFlavor = `${img.name} — Curated study from the ${collection.title} series`;
         return (
-          <article class="break-inside-avoid bg-stone-900/40 border border-stone-800/70 p-2 overflow-hidden group">
+          <article 
+            class="break-inside-avoid metallic-panel tech-corner border border-zinc-800/90 p-2.5 overflow-hidden group transition-all duration-200 hover:border-purple-500"
+            data-flavor={frameFlavor}
+          >
             <button
               type="button"
-              class="block w-full text-left overflow-hidden relative cursor-zoom-in"
+              class="block w-full text-left overflow-hidden relative cursor-zoom-in bg-black border border-zinc-800"
               onclick={`document.getElementById('${modalId}').showModal()`}
             >
               <img 
@@ -71,27 +139,29 @@ const { collection } = Astro.props;
                 class="w-full h-auto object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
                 loading="lazy" 
               />
-              <div class="absolute inset-0 bg-stone-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <span class="text-[10px] uppercase tracking-widest bg-stone-950/80 text-white px-3 py-1.5 border border-stone-700">Enlarge</span>
+              <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <span class="text-[10px] uppercase font-mono tracking-widest bg-zinc-950/90 text-white px-3 py-1.5 border border-[#00ff88]/50 chamfer-btn">
+                  Inspect
+                </span>
               </div>
             </button>
-            <p class="text-[11px] font-mono text-stone-400 mt-2 px-1 capitalize">{img.name}</p>
+            <p class="text-[11px] font-mono text-zinc-300 mt-2.5 px-1 capitalize">{img.name}</p>
 
             <dialog 
               id={modalId}
-              class="m-auto p-0 rounded-xs backdrop:bg-stone-950/85 bg-stone-900 text-stone-100 max-w-5xl w-[94vw] max-h-[92vh] overflow-y-auto shadow-2xl border border-stone-800"
+              class="m-auto p-0 rounded-none backdrop:bg-black/90 bg-zinc-950 text-zinc-100 max-w-5xl w-[94vw] max-h-[92vh] overflow-y-auto shadow-2xl border border-zinc-700"
             >
               <div class="p-6 sm:p-8 relative">
                 <button 
                   type="button"
-                  class="absolute top-4 right-4 text-stone-400 hover:text-white text-3xl font-light cursor-pointer leading-none p-2 z-10"
+                  class="absolute top-4 right-4 text-zinc-400 hover:text-[#00ff88] text-3xl font-light cursor-pointer leading-none p-2 z-10 transition-colors"
                   onclick={`document.getElementById('${modalId}').close()`}
                   aria-label="Close"
                 >
                   &times;
                 </button>
                 
-                <div class="bg-black/50 flex items-center justify-center max-h-[75vh] overflow-hidden mb-4">
+                <div class="bg-black flex items-center justify-center max-h-[75vh] overflow-hidden mb-4 border border-zinc-800">
                   <img 
                     src={img.url} 
                     alt={img.name} 
@@ -99,9 +169,9 @@ const { collection } = Astro.props;
                   />
                 </div>
 
-                <div class="border-t border-stone-800 pt-3 flex justify-between items-center text-xs font-mono text-stone-400">
-                  <span class="capitalize text-stone-200">{img.name}</span>
-                  <span class="text-[10px] uppercase tracking-widest text-stone-500">{collection.title}</span>
+                <div class="border-t border-zinc-800 pt-3 flex justify-between items-center text-xs font-mono text-zinc-400">
+                  <span class="capitalize text-zinc-200">{img.name}</span>
+                  <span class="text-[10px] uppercase tracking-widest text-purple-300">{collection.title}</span>
                 </div>
               </div>
             </dialog>
@@ -111,9 +181,22 @@ const { collection } = Astro.props;
     </div>
   </main>
 
-  <footer class="border-t border-stone-900 py-8 text-center text-[10px] uppercase tracking-widest text-stone-600">
-    &copy; 2026 {settings.siteTitle || "Nate Lacroix"}.
+  <footer class="border-t border-zinc-800/90 bg-[#08090d] py-8 px-6 mt-16 mb-6">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-mono text-zinc-500">
+      <div class="flex items-center gap-3">
+        <span class="w-2 h-2 bg-[#00ff88] transform rotate-45 inline-block"></span>
+        <span>&copy; 2026 {settings.siteTitle || "Nate Lacroix"}. All rights reserved.</span>
+      </div>
+      <div class="flex items-center gap-4 text-[11px] text-zinc-400 uppercase tracking-widest">
+        <span class="text-purple-300/80">Midland, Ontario</span>
+        <span>·</span>
+        <span>Photography Archive</span>
+      </div>
+    </div>
   </footer>
+
+  <!-- Interactive Status Bar -->
+  <StatusBar defaultText={`GALLERY // ${collection.title} — Hover over frames or links to inspect`} />
 
   <script>
     document.querySelectorAll('dialog').forEach((dialog) => {

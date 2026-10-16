@@ -1,1 +1,159 @@
 @import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --metallic-carbon: #090a0d;
+  --metallic-surface-1: #111318;
+  --metallic-surface-2: #181b22;
+  --metallic-surface-3: #222631;
+  --metallic-steel: #8b929f;
+  --metallic-highlight: rgba(255, 255, 255, 0.14);
+  --neon-green: #00ff88;
+  --neon-purple: #c084fc;
+  --neon-purple-deep: #a855f7;
+}
+
+body {
+  font-family: 'Archivo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #07080a;
+  color: #e2e8f0;
+  background-image: 
+    radial-gradient(ellipse at 20% 0%, rgba(168, 85, 247, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 0%, rgba(0, 255, 136, 0.08) 0%, transparent 50%),
+    linear-gradient(180deg, #090b0e 0%, #060709 100%);
+  background-attachment: fixed;
+}
+
+::selection {
+  background-color: rgba(168, 85, 247, 0.45);
+  color: #00ff88;
+}
+
+/* Metallic Panel Styles */
+.metallic-panel {
+  background: linear-gradient(175deg, #171a21 0%, #101217 50%, #0b0c10 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.14),
+    0 4px 24px rgba(0, 0, 0, 0.7);
+  position: relative;
+}
+
+.metallic-panel-subtle {
+  background: linear-gradient(180deg, #13151c 0%, #0d0f13 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+.metallic-edge {
+  position: relative;
+}
+.metallic-edge::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(168, 85, 247, 0.5) 30%, rgba(0, 255, 136, 0.6) 70%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Angular Chamfered Cuts */
+.chamfer-btn {
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+}
+
+.chamfer-card {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+
+.chamfer-tr {
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+}
+
+.chamfer-bl {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+
+/* Precision Corner Marks */
+.tech-corner {
+  position: relative;
+}
+.tech-corner::before,
+.tech-corner::after {
+  content: '+';
+  position: absolute;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: rgba(0, 255, 136, 0.35);
+  pointer-events: none;
+  line-height: 1;
+}
+.tech-corner::before {
+  top: 4px;
+  left: 4px;
+}
+.tech-corner::after {
+  bottom: 4px;
+  right: 4px;
+  color: rgba(192, 132, 252, 0.4);
+}
+
+/* Dark Steel Button with Neon Green / Purple Accents */
+.btn-steel {
+  background: linear-gradient(180deg, #2b303c 0%, #191c24 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #f1f5f9;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.25),
+    0 2px 8px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-steel:hover {
+  background: linear-gradient(180deg, #383f4f 0%, #20242f 100%);
+  border-color: #00ff88;
+  color: #ffffff;
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.4),
+    0 0 12px rgba(0, 255, 136, 0.2),
+    0 4px 16px rgba(0, 0, 0, 0.7);
+  transform: translateY(-1px);
+}
+.btn-steel:active {
+  transform: translateY(0);
+  background: linear-gradient(180deg, #171920 0%, #252a36 100%);
+}
+
+.btn-steel-purple {
+  background: linear-gradient(180deg, #2b2738 0%, #1a1624 100%);
+  border: 1px solid rgba(192, 132, 252, 0.3);
+  color: #f3e8ff;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-steel-purple:hover {
+  background: linear-gradient(180deg, #3d3452 0%, #251e33 100%);
+  border-color: #c084fc;
+  box-shadow: 0 0 12px rgba(192, 132, 252, 0.25);
+  transform: translateY(-1px);
+}
+
+/* Neon Green & Purple Helpers */
+.neon-glow-green {
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+}
+.neon-glow-purple {
+  text-shadow: 0 0 8px rgba(192, 132, 252, 0.5);
+}
+
+/* Shutter scanline / sweep animation */
+@keyframes sweep {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(1000%); }
+}
+
+.animate-sweep {
+  animation: sweep 4s linear infinite;
+}

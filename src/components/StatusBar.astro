@@ -1,0 +1,131 @@
+---
+interface Props {
+  defaultText?: string;
+}
+
+const { defaultText = "IDLE // Hover over photo frames, video projects, or links to inspect" } = Astro.props;
+---
+
+<aside 
+  id="interactive-status-bar" 
+  class="fixed bottom-0 left-0 right-0 z-50 bg-[#090b0e]/95 backdrop-blur-md border-t border-zinc-700/80 px-5 sm:px-8 py-2.5 shadow-2xl transition-all duration-300"
+  aria-live="polite"
+  data-default-text={defaultText}
+>
+  <!-- Top Specular Highlight Line (Neon Purple to Neon Green Gradient) -->
+  <div class="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#c084fc]/60 via-[#00ff88]/60 to-transparent pointer-events-none"></div>
+
+  <div class="max-w-7xl mx-auto flex items-center justify-between gap-4 text-xs font-mono">
+    <!-- Active Flavor Text Readout -->
+    <div class="flex items-center gap-2.5 min-w-0 flex-1">
+      <span class="text-[#00ff88] font-bold select-none text-sm transition-transform duration-150 inline-block neon-glow-green" id="status-prefix">&gt;</span>
+      <p 
+        id="status-flavor-content" 
+        class="text-zinc-200 truncate font-light tracking-wide transition-opacity duration-200 select-none text-xs sm:text-[13px]"
+      >
+        {defaultText}
+      </p>
+    </div>
+
+    <!-- Telemetry Badges (Right side) -->
+    <div class="hidden md:flex items-center gap-3 text-[10px] text-zinc-400 uppercase tracking-widest shrink-0 select-none border-l border-zinc-800/80 pl-4">
+      <span class="flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 bg-[#00ff88] rounded-none transform rotate-45 inline-block" id="status-mode-dot"></span>
+        <span id="status-mode-label" class="text-zinc-300 font-mono">STANDBY</span>
+      </span>
+      <span class="text-zinc-700">·</span>
+      <span class="text-purple-300/80 tabular-nums">44.75°N 79.88°W</span>
+    </div>
+  </div>
+</aside>
+
+<script>
+  function setupStatusBar() {
+    const statusBar = document.getElementById('interactive-status-bar');
+    if (!statusBar) return;
+
+    const textEl = document.getElementById('status-flavor-content');
+    const prefixEl = document.getElementById('status-prefix');
+    const modeLabel = document.getElementById('status-mode-label');
+    const modeDot = document.getElementById('status-mode-dot');
+    const defaultText = statusBar.getAttribute('data-default-text') || "IDLE // Hover over photo frames, video projects, or links to inspect";
+
+    let leaveTimeout: any = null;
+
+    function setStatus(text: string, active: boolean) {
+      if (!textEl) return;
+
+      textEl.style.opacity = '0.4';
+      setTimeout(() => {
+        textEl.textContent = text;
+        textEl.style.opacity = '1';
+      }, 60);
+
+      if (active) {
+        if (prefixEl) {
+          prefixEl.classList.remove('text-[#00ff88]');
+          prefixEl.classList.add('text-[#c084fc]', 'scale-110');
+        }
+        if (modeLabel) {
+          modeLabel.textContent = "INSPECT";
+          modeLabel.classList.add('text-[#00ff88]');
+          modeLabel.classList.remove('text-zinc-300');
+        }
+        if (modeDot) {
+          modeDot.classList.add('bg-[#c084fc]');
+          modeDot.classList.remove('bg-[#00ff88]', 'bg-zinc-500');
+        }
+      } else {
+        if (prefixEl) {
+          prefixEl.classList.add('text-[#00ff88]');
+          prefixEl.classList.remove('text-[#c084fc]', 'scale-110');
+        }
+        if (modeLabel) {
+          modeLabel.textContent = "STANDBY";
+          modeLabel.classList.remove('text-[#00ff88]');
+          modeLabel.classList.add('text-zinc-300');
+        }
+        if (modeDot) {
+          modeDot.classList.add('bg-[#00ff88]');
+          modeDot.classList.remove('bg-[#c084fc]');
+        }
+      }
+    }
+
+    document.addEventListener('mouseover', (e) => {
+      const target = (e.target as HTMLElement)?.closest('[data-flavor]');
+      if (!target) return;
+
+      const flavor = target.getAttribute('data-flavor');
+      if (!flavor) return;
+
+      if (leaveTimeout) {
+        clearTimeout(leaveTimeout);
+        leaveTimeout = null;
+      }
+
+      setStatus(flavor, true);
+    });
+
+    document.addEventListener('mouseout', (e) => {
+      const currentTarget = (e.target as HTMLElement)?.closest('[data-flavor]');
+      if (!currentTarget) return;
+
+      const nextTarget = (e.relatedTarget as HTMLElement | null)?.closest('[data-flavor]');
+      if (nextTarget) {
+        return;
+      }
+
+      if (leaveTimeout) clearTimeout(leaveTimeout);
+      leaveTimeout = setTimeout(() => {
+        setStatus(defaultText, false);
+      }, 350);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupStatusBar);
+  } else {
+    setupStatusBar();
+  }
+</script>

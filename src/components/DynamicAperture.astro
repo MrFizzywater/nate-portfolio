@@ -1,0 +1,720 @@
+---
+interface PhotoItem {
+  id: string;
+  title: string;
+  year: number;
+  image: string;
+  category: string;
+  description?: string;
+}
+
+interface Props {
+  photos: PhotoItem[];
+}
+
+const { photos } = Astro.props;
+// Exclude 'posters' gallery items defensively from the randomized aperture engine
+const sanitizedPhotos = (photos || []).filter((p) => {
+  const cat = (p.category || '').toLowerCase().trim();
+  const img = (p.image || '').toLowerCase();
+  const id = (p.id || '').toLowerCase();
+  return cat !== 'posters' && cat !== 'poster' && !img.includes('/posters/') && !id.startsWith('posters-');
+});
+// Client-side payload
+const photosJson = JSON.stringify(sanitizedPhotos);
+---
+
+<div class="space-y-4" id="dynamic-aperture-container" data-photos={photosJson}>
+  <!-- Section Title & Shutter Control Bar -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-zinc-800/80 pb-4">
+    <div>
+      <div class="flex items-center gap-3">
+        <span class="w-2 h-2 bg-[#00ff88] rounded-none transform rotate-45 inline-block"></span>
+        <span class="text-[11px] font-mono uppercase tracking-[0.25em] text-[#00ff88]">Dynamic Aperture</span>
+        <span class="text-[10px] font-mono text-zinc-600">/</span>
+        <span class="text-[10px] font-mono text-purple-400">Kinetic Gallery Shuffler</span>
+      </div>
+      <h2 class="text-xl sm:text-2xl font-light tracking-tight text-white mt-1">
+        Randomized Frame Engine
+      </h2>
+    </div>
+
+    <!-- Angular Metallic Action Controls -->
+    <div class="flex items-center gap-2.5 flex-wrap">
+      <button 
+        type="button" 
+        id="btn-shuffle-frame"
+        class="btn-steel chamfer-btn px-4 py-2 text-xs font-mono uppercase tracking-wider flex items-center gap-2 cursor-pointer border-zinc-700 hover:border-[#00ff88]"
+        title="Load a new random frame from the gallery"
+        data-flavor="SHUTTER CYCLE // Randomize active aperture frame and telemetry"
+      >
+        <svg class="w-3.5 h-3.5 text-[#00ff88]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span>Randomize Frame</span>
+      </button>
+
+      <button 
+        type="button" 
+        id="btn-toggle-cycle"
+        class="bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-300 hover:text-white px-3.5 py-2 text-xs font-mono uppercase tracking-wider flex items-center gap-2 cursor-pointer transition-colors hover:border-purple-500"
+        data-flavor="KINETIC MODE // Toggle 4-second automated gallery cycling"
+      >
+        <span class="w-1.5 h-1.5 bg-zinc-500 rounded-none" id="cycle-indicator-dot"></span>
+        <span id="cycle-toggle-label">Auto-Cycle: Off</span>
+      </button>
+
+      <button 
+        type="button" 
+        id="btn-enlarge-aperture"
+        class="bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-300 hover:text-white px-3 py-2 text-xs font-mono uppercase tracking-wider cursor-pointer transition-colors hover:border-purple-400"
+        title="View full resolution"
+        data-flavor="MAGNIFY // Open high-resolution frame inspection modal"
+      >
+        <span>Full View ↗</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Viewport & Curatorial Praise Chassis -->
+  <div class="metallic-panel tech-corner border border-zinc-700/80 p-3 sm:p-5 relative overflow-hidden group">
+    <!-- Angular Metallic Edge Sheen Line with Purple and Neon Green -->
+    <div class="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/50 to-[#00ff88]/50 via-transparent pointer-events-none"></div>
+
+    <!-- Cycle Progress Line (animates with Purple-to-Neon Green gradient when auto-cycle active) -->
+    <div id="cycle-progress-bar" class="absolute top-0 left-0 h-[2px] bg-gradient-to-r from-purple-500 to-[#00ff88] w-0 transition-all duration-300 pointer-events-none"></div>
+
+    <!-- 2-Column Split: Viewport on Left, Fictional Critical Praise on Right -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+      
+      <!-- Left Column: Primary Frame Viewport Stage (8 cols) -->
+      <div class="lg:col-span-7 xl:col-span-8 flex flex-col justify-between">
+        <!-- Viewport Container -->
+        <div class="relative aspect-[16/10] sm:aspect-[16/9] w-full bg-black/95 border border-zinc-800/90 overflow-hidden flex items-center justify-center">
+          <!-- Background Ambient Metallic Blur -->
+          <div 
+            id="ambient-backdrop" 
+            class="absolute inset-0 bg-cover bg-center blur-2xl opacity-25 scale-110 transition-all duration-700 pointer-events-none"
+          ></div>
+
+          <!-- Main Display Image -->
+          <img 
+            id="aperture-main-img" 
+            src="" 
+            alt="Random Gallery Frame" 
+            class="relative max-h-full max-w-full object-contain z-10 transition-all duration-500 ease-out cursor-zoom-in"
+          />
+
+          <!-- Subtle Viewfinder Reticle Overlay with Neon Green Corners -->
+          <div class="absolute inset-0 pointer-events-none z-20 flex items-center justify-center opacity-40 group-hover:opacity-80 transition-opacity">
+            <div class="w-24 h-24 border border-white/20 relative">
+              <div class="absolute top-1/2 left-0 right-0 h-[1px] bg-white/15"></div>
+              <div class="absolute top-0 bottom-0 left-1/2 w-[1px] bg-white/15"></div>
+              <div class="absolute top-0 left-0 w-2.5 h-2.5 border-t-2 border-l-2 border-[#00ff88]"></div>
+              <div class="absolute top-0 right-0 w-2.5 h-2.5 border-t-2 border-r-2 border-[#00ff88]"></div>
+              <div class="absolute bottom-0 left-0 w-2.5 h-2.5 border-b-2 border-l-2 border-[#c084fc]"></div>
+              <div class="absolute bottom-0 right-0 w-2.5 h-2.5 border-b-2 border-r-2 border-[#c084fc]"></div>
+            </div>
+          </div>
+
+          <!-- Live Aperture Shutter Wipe Overlay -->
+          <div id="shutter-flash" class="absolute inset-0 bg-zinc-950/90 z-30 opacity-0 pointer-events-none transition-opacity duration-200"></div>
+        </div>
+
+        <!-- Metallic Telemetry & Metadata Strip -->
+        <div class="mt-3 pt-3 border-t border-zinc-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs font-mono">
+          <div class="flex items-center gap-2.5">
+            <span class="text-white font-medium tracking-tight text-sm uppercase truncate max-w-[220px]" id="meta-title">Loading...</span>
+            <span class="text-zinc-600">/</span>
+            <span class="text-purple-400 tracking-wider uppercase text-[11px]" id="meta-category">Landscape</span>
+          </div>
+
+          <!-- Technical Telemetry Readout -->
+          <div class="flex items-center gap-3 text-[11px] text-zinc-400 tabular-nums">
+            <div class="flex items-center gap-1">
+              <span class="text-zinc-600">YEAR:</span>
+              <span class="text-zinc-300" id="meta-year">2026</span>
+            </div>
+            <span class="text-zinc-700">·</span>
+            <div class="flex items-center gap-1">
+              <span class="text-zinc-600">LENS:</span>
+              <span class="text-zinc-300" id="meta-lens">35mm ƒ/2.8</span>
+            </div>
+            <span class="text-zinc-700">·</span>
+            <div class="flex items-center gap-1">
+              <span class="text-zinc-600">FRAME:</span>
+              <span class="text-[#00ff88] font-bold" id="meta-index">01/08</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Fictional Critical Praise Panel (5 cols) -->
+      <div class="lg:col-span-5 xl:col-span-4 flex flex-col justify-between bg-[#0c0e14] border border-zinc-700/80 p-5 sm:p-6 relative overflow-hidden group/praise">
+        <!-- Top Edge Metallic Sheen Line with Purple and Green -->
+        <div class="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/60 to-[#00ff88]/60 via-transparent"></div>
+
+        <!-- Precision Corner Crosshairs in Neon Green and Purple -->
+        <div class="absolute top-2 left-2 text-[10px] font-mono text-[#00ff88]/60 leading-none pointer-events-none">+</div>
+        <div class="absolute top-2 right-2 text-[10px] font-mono text-[#c084fc]/60 leading-none pointer-events-none">+</div>
+        <div class="absolute bottom-2 left-2 text-[10px] font-mono text-[#c084fc]/60 leading-none pointer-events-none">+</div>
+        <div class="absolute bottom-2 right-2 text-[10px] font-mono text-[#00ff88]/60 leading-none pointer-events-none">+</div>
+
+        <!-- Header of Praise Box -->
+        <div>
+          <div class="flex items-center justify-between border-b border-zinc-800/80 pb-3 mb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 bg-purple-500 transform rotate-45 inline-block"></span>
+              <span class="text-[10px] font-mono uppercase tracking-[0.22em] text-purple-300">Curatorial Praise</span>
+            </div>
+            <button
+              type="button"
+              id="btn-shuffle-praise"
+              class="text-[10px] font-mono text-zinc-400 hover:text-[#00ff88] transition-colors uppercase tracking-wider cursor-pointer flex items-center gap-1 px-2.5 py-1 bg-zinc-900 border border-zinc-800 hover:border-[#00ff88]"
+              title="Generate alternative fictional review"
+              data-flavor="CURATORIAL DISPATCH // Generate alternative scholarly critique from international art panel"
+            >
+              <span>Alt Review</span>
+              <span class="text-[#00ff88]">↻</span>
+            </button>
+          </div>
+
+          <!-- Dynamic Quote Block -->
+          <div class="relative py-2 min-h-[140px] flex flex-col justify-center">
+            <span class="text-3xl font-serif text-purple-500/40 leading-none select-none -mb-3 block font-bold">“</span>
+            <blockquote 
+              id="praise-quote" 
+              class="text-sm sm:text-base font-light text-zinc-200 leading-relaxed italic transition-opacity duration-300"
+            >
+              Loading review...
+            </blockquote>
+          </div>
+        </div>
+
+        <!-- Critic Attribution -->
+        <div class="border-t border-zinc-800/80 pt-4 mt-4 space-y-1">
+          <div class="flex items-baseline justify-between gap-2">
+            <h4 id="praise-author" class="text-xs font-mono font-medium text-white tracking-wide uppercase">
+              Critic Name
+            </h4>
+            <span class="text-[9px] font-mono text-[#00ff88] uppercase tracking-widest shrink-0 font-semibold">
+              Verified Critique
+            </span>
+          </div>
+          <p id="praise-title" class="text-[11px] text-zinc-400 font-light leading-snug">
+            Senior Adjunct of Atmospheric Dramaturgy
+          </p>
+          <p id="praise-outlet" class="text-[10px] font-mono text-purple-300/80 uppercase tracking-wider">
+            The Brussels Monocle
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Filmstrip Preview Rack of Random Thumbnails -->
+    <div class="mt-4 pt-3 border-t border-zinc-800/60">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-400">Quick Swap Rack (Random Samples)</span>
+        <span class="text-[10px] font-mono text-purple-400">Click to focus</span>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2" id="thumbnail-rack">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- High-Res Inspection Modal Dialog -->
+  <dialog 
+    id="aperture-lightbox-modal"
+    class="m-auto p-0 rounded-none backdrop:bg-black/90 bg-zinc-950 text-zinc-100 max-w-6xl w-[95vw] max-h-[92vh] overflow-hidden shadow-2xl border border-zinc-700"
+  >
+    <div class="relative bg-zinc-950 flex flex-col">
+      <div class="flex items-center justify-between px-5 py-3.5 bg-zinc-900 border-b border-zinc-800">
+        <div class="flex items-center gap-3">
+          <span class="w-2 h-2 bg-[#00ff88] transform rotate-45 inline-block"></span>
+          <span class="text-xs font-mono uppercase tracking-widest text-zinc-200" id="modal-title">Frame Inspection</span>
+        </div>
+        <button 
+          type="button"
+          id="btn-close-modal"
+          class="text-zinc-400 hover:text-[#00ff88] text-2xl font-light leading-none cursor-pointer px-2 transition-colors"
+          aria-label="Close"
+        >
+          &times;
+        </button>
+      </div>
+
+      <div class="aspect-video w-full bg-black flex items-center justify-center p-4">
+        <img 
+          id="modal-img" 
+          src="" 
+          alt="High Resolution Inspection"
+          class="max-h-[75vh] w-auto max-w-full object-contain mx-auto" 
+        />
+      </div>
+
+      <div class="px-5 py-3 bg-zinc-900/80 border-t border-zinc-800 flex items-center justify-between text-xs font-mono text-zinc-400">
+        <span id="modal-meta" class="text-purple-300">35mm Atmospheric Study</span>
+        <span class="text-[10px] uppercase tracking-widest text-zinc-400">Nate Lacroix Portfolio Archive</span>
+      </div>
+    </div>
+  </dialog>
+</div>
+
+<script>
+  interface PhotoData {
+    id: string;
+    title: string;
+    year: number;
+    image: string;
+    category: string;
+    description?: string;
+  }
+
+  interface PraiseItem {
+    quote: string;
+    author: string;
+    title: string;
+    outlet: string;
+    category?: string;
+  }
+
+  const praises: PraiseItem[] = [
+    {
+      quote: "A devastatingly polite meditation on damp geometry. One senses the photographer was freezing, yet stubbornly refused to go indoors for tea.",
+      author: "Dr. Alistair Pym-Smythe",
+      title: "Senior Fellow of Atmospheric Melancholia",
+      outlet: "The Burlington Quarterly of Severe Shadows"
+    },
+    {
+      quote: "Notice how the horizon line quietly accuses the viewer of shallow life choices. It is both spiritually crushing and ideal for a dentist's waiting room.",
+      author: "Madame Geneviève Devereaux-Lemaire",
+      title: "Chief Juror of Nordic Nihilism",
+      outlet: "Cahiers du Crépuscule"
+    },
+    {
+      quote: "The depth of field here is practically aggressive. It does not merely document the marsh; it interrogates the marsh regarding its whereabouts in November 2015.",
+      author: "Ignatius Quail, O.B.E.",
+      title: "Chairperson of Inconvenient Perspectives",
+      outlet: "Antwerp School of Heavy Mist",
+      category: "Landscape"
+    },
+    {
+      quote: "An audacious triumph of ontological stillness. Even the canine subject in the golden hour appears deeply burdened by late-stage capitalism.",
+      author: "Seraphina Cross-Davenport",
+      title: "Distinguished Lecturer in Suburban Postmodernism",
+      outlet: "Toronto Aesthetic Tribunal",
+      category: "Animals"
+    },
+    {
+      quote: "The curvature of stainless steel here evokes seventeenth-century chiaroscuro and an overwhelming desire to wash the dishes immediately.",
+      author: "Bartholomew Van Der Graaf",
+      title: "Curator of Inanimate Despair",
+      outlet: "Zurich Contemporary Monograph Review",
+      category: "Still Life"
+    },
+    {
+      quote: "Exquisite tonal restraint. A lesser lensman would have introduced joy or pastel warmth, but here we are rewarded with pristine, uncompromising Canadian stoicism.",
+      author: "Julian Vance-Thorne",
+      title: "Senior Essayist for 'Why Is It So Cold Out Here?'",
+      outlet: "The Boreal Monocle"
+    },
+    {
+      quote: "The subtle tension between Georgian Bay dampness and existential dread is so sharp it made me apologize to my baseboard heater.",
+      author: "Lady Cordelia Winter-Blythe",
+      title: "Honorary President of the Midland Guild of Grim Weather",
+      outlet: "Georgian Bay Art Dispatch",
+      category: "Atmosphere"
+    },
+    {
+      quote: "The framing possesses the emotional gravity of a diesel semi-trailer idling in an empty gravel lot on a drizzly Sunday afternoon.",
+      author: "Archibald Sterling-Greene",
+      title: "Consultant to the Ministry of Dramatic Industrial Rust",
+      outlet: "Edinburgh Cine-Texture Gazette",
+      category: "Atmosphere"
+    },
+    {
+      quote: "A tour de force of unhurried dread. You can practically taste the lukewarm black coffee in the Stanley thermos just off-frame.",
+      author: "Professor Thaddeus Moss",
+      title: "Chair of Decentered Terrestrial Phenomenology",
+      outlet: "The Gilded Shutter Review"
+    },
+    {
+      quote: "Few living artists have captured the metaphysical ache of chain-link fencing with such terrifying, razor-sharp sincerity.",
+      author: "Persephone Blight-Holloway",
+      title: "Senior Fellow in Intentional Awkwardness",
+      outlet: "The Royal Society of Spatial Tension"
+    },
+    {
+      quote: "The foliage appears fully aware that winter is approaching and is quietly, deeply resentful of the entire meteorological process.",
+      author: "Eustace C. Finch",
+      title: "Chief Editor of Deciduous Grievances",
+      outlet: "Midland Botanical Dispatches",
+      category: "Landscape"
+    },
+    {
+      quote: "Rarely does negative space feel so profoundly judgment-free, yet subtly disappointed in everything you've accomplished this fiscal quarter.",
+      author: "Dr. Veronika Kroll",
+      title: "Adjunct Professor of Semi-Industrial Yearning",
+      outlet: "Berlin Visual Symposium"
+    },
+    {
+      quote: "The asphalt texture here speaks fluent French. Brutalist, unforgiving, yet strangely comforting like an overcast Tuesday in Sudbury.",
+      author: "Henri-Luc de la Tour",
+      title: "Visiting Scholar of Concrete Grief",
+      outlet: "La Gazette des Surfaces Oubliées"
+    },
+    {
+      quote: "To gaze upon this composition is to understand that gravity is not merely a physical constant, but a personal artistic grievance.",
+      author: "Barnaby Finch-Cromwell",
+      title: "Author of 'Why That Puddle Matters (A Manifesto)'",
+      outlet: "The Avant-Boreal Courier"
+    },
+    {
+      quote: "The shutter speed is so calculated it feels like an administrative audit carried out by a very poetic tax attorney.",
+      author: "Vivienne St. Claire",
+      title: "Curator of Bureaucratic Light",
+      outlet: "The Oxford Journal of Reluctant Cinema"
+    },
+    {
+      quote: "A masterclass in textural hostility. If this photograph had a scent, it would be cold lake water, wet dog fur, and wool socks that never truly dry.",
+      author: "Reginald Thorpe-Smythe",
+      title: "Principal Examiner of Damp Textiles",
+      outlet: "The Northern Ontario Monograph",
+      category: "Animals"
+    },
+    {
+      quote: "The lighting here does not illuminate; it merely tolerates the presence of physical matter.",
+      author: "Dr. Sibyl Vane-Huxley",
+      title: "Director of Darkroom Nihilism",
+      outlet: "The Vienna Camera Guild"
+    },
+    {
+      quote: "It takes tremendous courage to photograph an empty boardwalk with such unyielding emotional violence.",
+      author: "Crispin Wodehouse",
+      title: "Special Envoy for Linear Loneliness",
+      outlet: "The Westminster Review of Planks",
+      category: "Landscape"
+    },
+    {
+      quote: "There is an austere dignity in how the silver patina catches the light, practically daring the viewer to question its purpose.",
+      author: "Maximilian Von Gotha",
+      title: "Keeper of Cutlery Epistemology",
+      outlet: "The Munich Journal of Utensil Studies",
+      category: "Still Life"
+    },
+    {
+      quote: "Lacroix treats the Canadian shield not as topography, but as an unpaid psychological tab that none of us are solvent enough to settle.",
+      author: "Daphne Sterling-Pike",
+      title: "Correspondent for Bleak Latitudes",
+      outlet: "The St. Lawrence Observer"
+    }
+  ];
+
+  function initDynamicAperture() {
+    const container = document.getElementById('dynamic-aperture-container');
+    if (!container) return;
+
+    const rawData = container.getAttribute('data-photos');
+    if (!rawData) return;
+
+    let photos: PhotoData[] = [];
+    try {
+      photos = JSON.parse(rawData);
+    } catch {
+      return;
+    }
+
+    // Exclude 'posters' gallery from the randomized frame engine
+    photos = photos.filter((p) => {
+      const cat = (p.category || '').toLowerCase().trim();
+      const img = (p.image || '').toLowerCase();
+      const id = (p.id || '').toLowerCase();
+      return cat !== 'posters' && cat !== 'poster' && !img.includes('/posters/') && !id.startsWith('posters-');
+    });
+
+    if (photos.length === 0) return;
+
+    // Elements
+    const mainImg = document.getElementById('aperture-main-img') as HTMLImageElement | null;
+    const ambientBackdrop = document.getElementById('ambient-backdrop');
+    const shutterFlash = document.getElementById('shutter-flash');
+    const metaTitle = document.getElementById('meta-title');
+    const metaCategory = document.getElementById('meta-category');
+    const metaYear = document.getElementById('meta-year');
+    const metaLens = document.getElementById('meta-lens');
+    const metaIndex = document.getElementById('meta-index');
+    const thumbnailRack = document.getElementById('thumbnail-rack');
+    const btnShuffle = document.getElementById('btn-shuffle-frame');
+    const btnToggleCycle = document.getElementById('btn-toggle-cycle');
+    const cycleLabel = document.getElementById('cycle-toggle-label');
+    const cycleDot = document.getElementById('cycle-indicator-dot');
+    const cycleProgressBar = document.getElementById('cycle-progress-bar');
+    const btnEnlarge = document.getElementById('btn-enlarge-aperture');
+    const modal = document.getElementById('aperture-lightbox-modal') as HTMLDialogElement | null;
+    const modalImg = document.getElementById('modal-img') as HTMLImageElement | null;
+    const modalTitle = document.getElementById('modal-title');
+    const modalMeta = document.getElementById('modal-meta');
+    const btnCloseModal = document.getElementById('btn-close-modal');
+
+    // Praise Elements
+    const praiseQuote = document.getElementById('praise-quote');
+    const praiseAuthor = document.getElementById('praise-author');
+    const praiseTitle = document.getElementById('praise-title');
+    const praiseOutlet = document.getElementById('praise-outlet');
+    const btnShufflePraise = document.getElementById('btn-shuffle-praise');
+
+    // Simulated optical lenses for artistic cinematography telemetry
+    const lenses = [
+      '35mm ƒ/2.0',
+      '50mm ƒ/1.4',
+      '85mm ƒ/1.8',
+      '24mm ƒ/2.8',
+      '70-200mm ƒ/4.0',
+      '40mm Anamorphic 2x',
+      '28mm ƒ/2.8',
+    ];
+
+    let currentIndex = Math.floor(Math.random() * photos.length);
+    let currentPraiseIndex = -1;
+    let isAutoCycling = false;
+    let cycleTimer: any = null;
+    let cycleProgressTimer: any = null;
+    const CYCLE_DURATION = 4000; // ms
+
+    function pickPraise(category: string): PraiseItem {
+      const matching = praises.filter(p => !p.category || p.category.toLowerCase() === category.toLowerCase());
+      const pool = matching.length > 0 ? matching : praises;
+
+      let nextPraiseIdx = Math.floor(Math.random() * pool.length);
+      const chosen = pool[nextPraiseIdx];
+      currentPraiseIndex = praises.indexOf(chosen);
+      return chosen;
+    }
+
+    function updatePraise(category: string, animate = true) {
+      const praise = pickPraise(category);
+      if (!praiseQuote) return;
+
+      if (animate) {
+        praiseQuote.style.opacity = '0';
+        setTimeout(() => {
+          applyPraise(praise);
+          praiseQuote.style.opacity = '1';
+        }, 150);
+      } else {
+        applyPraise(praise);
+      }
+    }
+
+    function applyPraise(praise: PraiseItem) {
+      if (praiseQuote) praiseQuote.textContent = praise.quote;
+      if (praiseAuthor) praiseAuthor.textContent = praise.author;
+      if (praiseTitle) praiseTitle.textContent = praise.title;
+      if (praiseOutlet) praiseOutlet.textContent = praise.outlet;
+    }
+
+    function displayPhoto(index: number, animate = true) {
+      if (!photos[index]) return;
+      currentIndex = index;
+      const photo = photos[index];
+
+      if (animate && shutterFlash) {
+        shutterFlash.style.opacity = '0.9';
+        setTimeout(() => {
+          shutterFlash.style.opacity = '0';
+        }, 150);
+      }
+
+      setTimeout(() => {
+        if (mainImg) {
+          mainImg.src = photo.image;
+          mainImg.alt = photo.title;
+        }
+        if (ambientBackdrop) {
+          ambientBackdrop.style.backgroundImage = `url('${photo.image}')`;
+        }
+        if (metaTitle) metaTitle.textContent = photo.title;
+        if (metaCategory) metaCategory.textContent = photo.category;
+        if (metaYear) metaYear.textContent = String(photo.year);
+        if (metaLens) {
+          const lens = lenses[index % lenses.length];
+          metaLens.textContent = lens;
+        }
+        if (metaIndex) {
+          const formattedCurrent = String(index + 1).padStart(2, '0');
+          const formattedTotal = String(photos.length).padStart(2, '0');
+          metaIndex.textContent = `${formattedCurrent}/${formattedTotal}`;
+        }
+
+        // Update the fake praise for this photo
+        updatePraise(photo.category, animate);
+
+        // Highlight active rack item with neon green
+        updateActiveThumbnail(index);
+      }, animate ? 100 : 0);
+    }
+
+    function renderThumbnailRack() {
+      if (!thumbnailRack) return;
+      thumbnailRack.innerHTML = '';
+
+      const rackIndices = [currentIndex];
+      const availableIndices = Array.from({ length: photos.length }, (_, i) => i).filter(i => i !== currentIndex);
+      availableIndices.sort(() => 0.5 - Math.random());
+      
+      const countToTake = Math.min(photos.length, 6);
+      while (rackIndices.length < countToTake && availableIndices.length > 0) {
+        rackIndices.push(availableIndices.pop()!);
+      }
+
+      rackIndices.forEach((photoIdx) => {
+        const item = photos[photoIdx];
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.dataset.index = String(photoIdx);
+        btn.setAttribute('data-flavor', `APERTURE SWAP // Mount "${item.title}" into the dynamic active viewfinder`);
+        btn.className = `group relative aspect-video bg-zinc-950 border overflow-hidden cursor-pointer transition-all duration-200 text-left ${
+          photoIdx === currentIndex 
+            ? 'border-[#00ff88] ring-1 ring-[#00ff88]' 
+            : 'border-zinc-800 hover:border-purple-400'
+        }`;
+
+        btn.innerHTML = `
+          <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+          <div class="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors"></div>
+          <span class="absolute bottom-1 left-1.5 right-1.5 text-[9px] font-mono text-zinc-300 truncate uppercase bg-black/80 px-1 py-0.5 border border-zinc-800/80">
+            ${item.title}
+          </span>
+        `;
+
+        btn.addEventListener('click', () => {
+          displayPhoto(photoIdx, true);
+          if (isAutoCycling) restartAutoCycleProgress();
+        });
+
+        thumbnailRack.appendChild(btn);
+      });
+    }
+
+    function updateActiveThumbnail(activeIdx: number) {
+      if (!thumbnailRack) return;
+      thumbnailRack.querySelectorAll('button').forEach((btn) => {
+        const idx = Number(btn.getAttribute('data-index'));
+        if (idx === activeIdx) {
+          btn.classList.add('border-[#00ff88]', 'ring-1', 'ring-[#00ff88]');
+          btn.classList.remove('border-zinc-800', 'hover:border-purple-400');
+        } else {
+          btn.classList.remove('border-[#00ff88]', 'ring-1', 'ring-[#00ff88]');
+          btn.classList.add('border-zinc-800', 'hover:border-purple-400');
+        }
+      });
+    }
+
+    function shuffleRandom() {
+      let nextIndex = Math.floor(Math.random() * photos.length);
+      if (photos.length > 1 && nextIndex === currentIndex) {
+        nextIndex = (currentIndex + 1) % photos.length;
+      }
+      displayPhoto(nextIndex, true);
+      renderThumbnailRack();
+      if (isAutoCycling) restartAutoCycleProgress();
+    }
+
+    function startAutoCycle() {
+      isAutoCycling = true;
+      if (cycleLabel) cycleLabel.textContent = 'Auto-Cycle: Active';
+      if (cycleDot) {
+        cycleDot.classList.remove('bg-zinc-500');
+        cycleDot.classList.add('bg-[#00ff88]');
+      }
+      restartAutoCycleProgress();
+    }
+
+    function stopAutoCycle() {
+      isAutoCycling = false;
+      if (cycleTimer) clearInterval(cycleTimer);
+      if (cycleProgressTimer) clearInterval(cycleProgressTimer);
+      if (cycleProgressBar) cycleProgressBar.style.width = '0%';
+      if (cycleLabel) cycleLabel.textContent = 'Auto-Cycle: Off';
+      if (cycleDot) {
+        cycleDot.classList.remove('bg-[#00ff88]');
+        cycleDot.classList.add('bg-zinc-500');
+      }
+    }
+
+    function restartAutoCycleProgress() {
+      if (!isAutoCycling) return;
+      if (cycleTimer) clearInterval(cycleTimer);
+      if (cycleProgressTimer) clearInterval(cycleProgressTimer);
+
+      let start = Date.now();
+      if (cycleProgressBar) cycleProgressBar.style.width = '0%';
+
+      cycleProgressTimer = setInterval(() => {
+        const elapsed = Date.now() - start;
+        const pct = Math.min(100, (elapsed / CYCLE_DURATION) * 100);
+        if (cycleProgressBar) cycleProgressBar.style.width = `${pct}%`;
+      }, 50);
+
+      cycleTimer = setTimeout(() => {
+        shuffleRandom();
+        restartAutoCycleProgress();
+      }, CYCLE_DURATION);
+    }
+
+    function openModal() {
+      if (!modal || !modalImg || !photos[currentIndex]) return;
+      const cur = photos[currentIndex];
+      modalImg.src = cur.image;
+      if (modalTitle) modalTitle.textContent = `${cur.title} (${cur.year}) — ${cur.category}`;
+      if (modalMeta) modalMeta.textContent = cur.description || `${cur.title} — Photography Archive`;
+      modal.showModal();
+    }
+
+    // Event listeners
+    btnShuffle?.addEventListener('click', () => shuffleRandom());
+
+    btnToggleCycle?.addEventListener('click', () => {
+      if (isAutoCycling) {
+        stopAutoCycle();
+      } else {
+        startAutoCycle();
+      }
+    });
+
+    btnShufflePraise?.addEventListener('click', () => {
+      if (photos[currentIndex]) {
+        updatePraise(photos[currentIndex].category, true);
+      }
+    });
+
+    btnEnlarge?.addEventListener('click', openModal);
+    mainImg?.addEventListener('click', openModal);
+
+    btnCloseModal?.addEventListener('click', () => modal?.close());
+    modal?.addEventListener('click', (e) => {
+      const rect = modal.getBoundingClientRect();
+      const inBox = (
+        rect.top <= e.clientY &&
+        e.clientY <= rect.top + rect.height &&
+        rect.left <= e.clientX &&
+        e.clientX <= rect.left + rect.width
+      );
+      if (!inBox) modal.close();
+    });
+
+    // Initialize display with a random photo & praise
+    displayPhoto(currentIndex, false);
+    renderThumbnailRack();
+  }
+
+  // Run on first load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDynamicAperture);
+  } else {
+    initDynamicAperture();
+  }
+</script>

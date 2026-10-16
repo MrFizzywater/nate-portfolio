@@ -8,6 +8,7 @@ const photos = defineCollection({
     year: z.number().default(2026),
     image: z.string(),
     category: z.string().default('Landscape'),
+    flavor: z.string().optional(),
   }),
 });
 
@@ -21,6 +22,7 @@ const archive = defineCollection({
     videoUrl: z.string().optional(),
     role: z.string().default('Director / Editor'),
     client: z.string().optional(),
+    flavor: z.string().optional(),
   }),
 });
 

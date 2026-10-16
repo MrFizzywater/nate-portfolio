@@ -1,6 +1,7 @@
 ---
 import { getEntry, render } from 'astro:content';
 import settings from '../content/settings/general.json';
+import StatusBar from '../components/StatusBar.astro';
 import '../styles/global.css';
 
 const entry = await getEntry('pages', 'about');
@@ -9,56 +10,141 @@ const { Content } = rendered || {};
 ---
 
 <!DOCTYPE html>
-<html lang="en" class="bg-stone-950 text-stone-100 antialiased selection:bg-stone-800">
+<html lang="en" class="bg-[#07080a] text-zinc-100 antialiased selection:bg-purple-900/60 selection:text-[#00ff88]">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>About — {settings.siteTitle || "Nate Lacroix"}</title>
 </head>
-<body class="min-h-screen flex flex-col justify-between font-sans">
-  <header class="border-b border-stone-800/80 sticky top-0 bg-stone-950/90 backdrop-blur-md z-30">
-    <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div>
-        <a href="/" class="text-xl font-light tracking-tight text-white block">
-          {settings.siteTitle || "Nate Lacroix"}
+<body class="min-h-screen flex flex-col justify-between font-sans pb-14">
+
+  <!-- Top Navigation (3-Zone Top Bar Contract with Neon Green & Purple Highlights) -->
+  <header class="sticky top-0 bg-[#090b0f]/95 backdrop-blur-md border-b border-zinc-800/80 z-30">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-8">
+      <!-- Zone 1: Single Brand Wordmark -->
+      <a 
+        href="/" 
+        class="text-lg font-medium tracking-tight text-white hover:text-[#00ff88] transition-colors uppercase whitespace-nowrap shrink-0 flex items-center gap-2"
+        data-flavor="STUDIO // Nate Lacroix — Midland, Ontario media production, cinema directing & photography"
+      >
+        <span class="w-2.5 h-2.5 bg-[#00ff88] transform rotate-45 inline-block shadow-[0_0_8px_rgba(0,255,136,0.6)]"></span>
+        <span>{settings.siteTitle || "Nate Lacroix"}</span>
+      </a>
+
+      <!-- Zone 2: 4-5 Concise Single-Line Navigation Links -->
+      <nav class="hidden md:flex items-center gap-8 text-xs font-mono uppercase tracking-widest text-zinc-400">
+        <a 
+          href="/" 
+          class="hover:text-[#c084fc] transition-colors whitespace-nowrap shrink-0"
+          data-flavor="WORK // Curated index of motion sequences, photography, and film studies"
+        >
+          Work
         </a>
-        <span class="text-[10px] uppercase tracking-[0.25em] text-stone-500">
-          {settings.tagline || "Photography • Moving Image"}
-        </span>
-      </div>
-      <nav class="flex items-center gap-5 sm:gap-6 text-xs uppercase tracking-widest font-medium">
-        <a href="/" class="text-stone-400 hover:text-white transition-colors">Work</a>
-        <a href="/galleries/" class="text-stone-400 hover:text-white transition-colors">Galleries</a>
-        <a href="/video-projects/" class="text-stone-400 hover:text-white transition-colors">Video Projects</a>
-        <a href="/about/" class="text-white border-b border-white pb-0.5">About</a>
-        <a href="/contact/" class="text-stone-400 hover:text-white transition-colors">Contact</a>
+        <a 
+          href="/galleries/" 
+          class="hover:text-[#c084fc] transition-colors whitespace-nowrap shrink-0"
+          data-flavor="GALLERIES // Curated location series and continuous photo archives"
+        >
+          Galleries
+        </a>
+        <a 
+          href="/video-projects/" 
+          class="hover:text-[#c084fc] transition-colors whitespace-nowrap shrink-0"
+          data-flavor="VIDEO PROJECTS // Directorial music videos, short films, and editorial reels"
+        >
+          Video Projects
+        </a>
+        <a 
+          href="/about/" 
+          class="text-white border-b-2 border-[#00ff88] pb-0.5 whitespace-nowrap shrink-0"
+          data-flavor="ABOUT // Profile, artist statement, and directorial background"
+        >
+          About
+        </a>
       </nav>
+
+      <!-- Zone 3: 1 Primary Action Control (Angular Metallic Button) -->
+      <div class="flex items-center gap-3 shrink-0">
+        <a 
+          href="/contact/" 
+          class="btn-steel chamfer-btn px-4 py-2 text-xs font-mono uppercase tracking-wider whitespace-nowrap shrink-0 inline-flex items-center gap-2 hover:border-[#00ff88]"
+          data-flavor="INQUIRIES // Direct electronic mail and commercial production dispatch"
+        >
+          <span>Direct Inquiries</span>
+          <span class="text-[#00ff88]">&rarr;</span>
+        </a>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-3xl mx-auto px-6 py-20 flex-grow w-full">
-    <span class="text-[10px] uppercase tracking-[0.3em] text-stone-500 font-mono block mb-3">Profile</span>
-    <h1 class="text-3xl sm:text-4xl font-light tracking-tight text-white mb-6">{entry?.data.title || "About"}</h1>
-    
-    {entry?.data.headline && (
-      <p class="text-xl sm:text-2xl font-light text-stone-300 leading-snug border-l-2 border-stone-700 pl-6 my-8 italic">
-        "{entry.data.headline}"
-      </p>
-    )}
-
-    {entry?.data.portrait && (
-      <div class="my-8 aspect-4/3 bg-stone-900 border border-stone-800 overflow-hidden">
-        <img src={entry.data.portrait} alt="Nate Lacroix" class="w-full h-full object-cover" />
+  <main class="max-w-3xl mx-auto px-6 py-16 flex-grow w-full space-y-8">
+    <div 
+      class="metallic-panel tech-corner border border-zinc-700/80 p-8 sm:p-12 space-y-8"
+      data-flavor="ARTIST DOSSIER // Media artist, filmmaker, and photographer based in Midland, Ontario"
+    >
+      <div>
+        <div class="flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500">
+          <span class="text-[#00ff88]">■</span>
+          <span class="text-[#00ff88]">Artist Dossier</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-light tracking-tight text-white mt-1">
+          {entry?.data.title || "About Nate Lacroix"}
+        </h1>
       </div>
-    )}
+      
+      {entry?.data.headline && (
+        <div 
+          class="bg-[#0c0e13] border border-zinc-800 p-6 relative"
+          data-flavor="ARTISTIC STATEMENT // Pacing, atmospheric density, and tactile film resonance"
+        >
+          <p class="text-lg sm:text-xl font-light text-zinc-200 leading-relaxed">
+            "{entry.data.headline}"
+          </p>
+        </div>
+      )}
 
-    <div class="prose prose-invert prose-stone text-stone-300 font-light leading-relaxed text-base space-y-6 pt-4 border-t border-stone-800/80">
-      {Content ? <Content /> : <p>Media artist and filmmaker based in Midland, Ontario.</p>}
+      {entry?.data.portrait && (
+        <div 
+          class="aspect-[4/3] bg-black border border-zinc-800 overflow-hidden relative"
+          data-flavor="PORTRAIT // Studio photography archive — Nate Lacroix"
+        >
+          <img src={entry.data.portrait} alt="Nate Lacroix" class="w-full h-full object-cover" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+        </div>
+      )}
+
+      <div class="prose prose-invert prose-zinc text-zinc-300 font-light leading-relaxed text-base space-y-6 pt-6 border-t border-zinc-800/80">
+        {Content ? <Content /> : <p>Media artist and filmmaker based in Midland, Ontario.</p>}
+      </div>
+
+      <div class="pt-6 border-t border-zinc-800/80 flex items-center justify-between text-xs font-mono text-zinc-400">
+        <span class="text-purple-300/80">MIDLAND, ONTARIO · 44.75° N, 79.88° W</span>
+        <a 
+          href="/contact/" 
+          class="text-[#00ff88] hover:text-white uppercase tracking-widest transition-colors font-semibold"
+          data-flavor="TRANSMISSION // Send direct inquiry to the studio"
+        >
+          Get In Touch &rarr;
+        </a>
+      </div>
     </div>
   </main>
 
-  <footer class="border-t border-stone-900 py-8 text-center text-[10px] uppercase tracking-widest text-stone-600">
-    &copy; 2026 {settings.siteTitle || "Nate Lacroix"}.
+  <footer class="border-t border-zinc-800/90 bg-[#08090d] py-8 px-6 mt-16 mb-6">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-mono text-zinc-500">
+      <div class="flex items-center gap-3">
+        <span class="w-2 h-2 bg-[#00ff88] transform rotate-45 inline-block"></span>
+        <span>&copy; 2026 {settings.siteTitle || "Nate Lacroix"}. All rights reserved.</span>
+      </div>
+      <div class="flex items-center gap-4 text-[11px] text-zinc-400 uppercase tracking-widest">
+        <span class="text-purple-300/80">Midland, Ontario</span>
+        <span>·</span>
+        <span>Studio Profile</span>
+      </div>
+    </div>
   </footer>
+
+  <!-- Interactive Status Bar -->
+  <StatusBar defaultText="ABOUT // Artist dossier, filmography, and background statement" />
 </body>
 </html>
