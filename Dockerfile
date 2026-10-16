@@ -2,9 +2,24 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci
+# Build arguments passed by Coolify / CI
+ARG BUNNY_API_KEY
+ARG BUNNY_STORAGE_ZONE
+ARG BUNNY_STORAGE_ENDPOINT
+ARG PUBLIC_BUNNY_CDN_URL
 
+ENV BUNNY_API_KEY=$BUNNY_API_KEY
+ENV BUNNY_STORAGE_ZONE=$BUNNY_STORAGE_ZONE
+ENV BUNNY_STORAGE_ENDPOINT=$BUNNY_STORAGE_ENDPOINT
+ENV PUBLIC_BUNNY_CDN_URL=$PUBLIC_BUNNY_CDN_URL
+
+# Copy package manifests
+COPY package*.json ./
+
+# Install dependencies: use npm ci if package-lock.json is valid, fallback cleanly to npm install
+RUN if [ -f package-lock.json ]; then npm ci || npm install; else npm install; fi
+
+# Copy all source files (excluding patterns in .dockerignore)
 COPY . .
 RUN npm run build
 
